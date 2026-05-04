@@ -46,11 +46,6 @@ supported_csv_files = [
         os.path.join("apps", "git", "git_command.talon-list"),
     ),
     CSVData(
-        "user.vocabulary",
-        os.path.join("settings", "additional_words.csv"),
-        os.path.join("core", "vocabulary", "vocabulary.talon-list"),
-    ),
-    CSVData(
         "user.letter",
         os.path.join("settings", "alphabet.csv"),
         os.path.join("core", "keys", "letter.talon-list"),

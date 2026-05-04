@@ -9,7 +9,7 @@
 #Answer: user.system_command_nb() 
 #And obviously just put the command as a string in the function call
 
-[insert] {user.additional_words}: auto_insert(additional_words)
+[insert] {user.vocabulary}: auto_insert(vocabulary)
 website {user.website}: auto_insert(website)
 system path <user.system_path>: auto_insert(system_path)
 
