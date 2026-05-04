@@ -23,3 +23,20 @@ escaped quad: '\\" \\"'
 escaped twin: "\\' \\'"
 escaped round: \( \)
 escaped box: \[ \]
+
+# My customizations 
+parens: ( )
+#args: ( )
+#square: [ ]
+#bracket: [ ]
+#square bracket: [ ]
+#brace: { }
+#angle: < >
+apostrophe: "' '"
+quote: "' '"
+#string: "' '"
+#double quote: '" "'
+#dub quote: '" "'
+grave: ` `
+#back tick: ` `
+#percent: % %

@@ -62,15 +62,6 @@ dub click | duke:
     mouse_click()
     # close the mouse grid
     user.grid_close()
-<<<<<<< HEAD
-(trip click | trip lick):
-	mouse_click()
-	mouse_click()
-	mouse_click()
-	# close the mouse grid
-	user.grid_close()
-(left drag | drag | drag start):
-=======
 trip click | trip lick:
     # close zoom if open
     tracking.zoom_cancel()
@@ -80,19 +71,18 @@ trip click | trip lick:
     # close the mouse grid
     user.grid_close()
 left drag | drag | drag start:
->>>>>>> upstream/main
     # close zoom if open
     tracking.zoom_cancel()
     user.mouse_drag(0)
     # close the mouse grid
     user.grid_close()
-(right drag | right drag start):
+right drag | right drag start:
     # close zoom if open
     tracking.zoom_cancel()
     user.mouse_drag(1)
     # close the mouse grid
     user.grid_close()
-(end drag | drag end): user.mouse_drag_end()
+end drag | drag end: user.mouse_drag_end()
 downer: user.mouse_scroll_down()
 downer here: user.mouse_scroll_down_no_rango()
 downer center:
@@ -104,7 +94,6 @@ downer tiny: user.mouse_scroll_down(0.2)
 downer tiny center:
     user.mouse_move_center_active_window()
     user.mouse_scroll_down(0.2)
-<<<<<<< HEAD
 downer (continuous | continue): user.mouse_scroll_down_continuous()
 downer (continuous | continue) center:
     user.mouse_move_center_active_window()
@@ -112,10 +101,6 @@ downer (continuous | continue) center:
 upper: user.mouse_scroll_up()
 upper here: user.mouse_scroll_up_no_rango()
 upper center:
-=======
-wheel up: user.mouse_scroll_up()
-wheel up here:
->>>>>>> upstream/main
     user.mouse_move_center_active_window()
     user.mouse_scroll_up()
 upper all: user.mouse_scroll_up(99)
@@ -124,41 +109,10 @@ upper tiny: user.mouse_scroll_up(0.2)
 upper tiny center:
     user.mouse_move_center_active_window()
     user.mouse_scroll_up(0.2)
-<<<<<<< HEAD
 upper (continuous | continue): user.mouse_scroll_up_continuous()
 upper (continuous | continue) center:
     user.mouse_move_center_active_window()
     user.mouse_scroll_up_continuous()
-(wheel | scroll) gaze: user.mouse_gaze_scroll()
-# (wheel | scroll) gaze:
-#     user.mouse_move_center_active_window()
-#     user.mouse_gaze_scroll()
-(wheel | scroll) stop: user.mouse_scroll_stop()
-# (wheel | scroll) stop center:
-#     user.mouse_move_center_active_window()
-#     user.mouse_scroll_stop()
-(wheel | scroll) left: user.mouse_scroll_left()
-# (wheel | scroll) left center:
-#     user.mouse_move_center_active_window()
-#     user.mouse_scroll_left()
-(wheel | scroll) tiny left: user.mouse_scroll_left(0.5)
-# (wheel | scroll) tiny left center:
-#     user.mouse_move_center_active_window()
-#     user.mouse_scroll_left(0.5)
-(wheel | scroll) right: user.mouse_scroll_right()
-# (wheel | scroll) right center:
-#     user.mouse_move_center_active_window()
-#     user.mouse_scroll_right()
-(wheel | scroll) tiny right: user.mouse_scroll_right(0.5)
-# (wheel | scroll) tiny right center:
-#     user.mouse_move_center_active_window()
-#     user.mouse_scroll_right(0.5)
-#copy mouse position: user.copy_mouse_position()
-curse no:
-    # Command added 2021-12-13, can remove after 2022-06-01
-    app.notify("Please activate the user.mouse_cursor_commands_enable tag to enable this command")
-
-=======
 wheel gaze: user.mouse_gaze_scroll()
 wheel gaze here:
     user.mouse_move_center_active_window()
@@ -190,7 +144,6 @@ wheel {user.continuous_scrolling_direction} here <number_small>:
     user.mouse_move_center_active_window()
     user.mouse_scroll_continuous(continuous_scrolling_direction, number_small)
 copy mouse position: user.copy_mouse_position()
->>>>>>> upstream/main
 # To scroll with a hiss sound, set mouse_enable_hiss_scroll to true in settings.talon
 mouse hiss up: user.hiss_scroll_up()
 mouse hiss down: user.hiss_scroll_down()
