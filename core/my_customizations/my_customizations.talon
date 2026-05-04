@@ -42,21 +42,21 @@ key(scroll_lock): user.toggle_talon_microphone()
 profile switcher open: user.open_browser_profile_switcher("Google Chrome")
 
 talon hood (relaunch | restart):
-    user.engine_mimic("head up show")
+    mimic("head up show")
     sleep(300ms)
-    user.engine_mimic("event log show")
+    mimic("event log show")
     sleep(300ms)
-    user.engine_mimic("status bar show")
+    mimic("status bar show")
     sleep(300ms)
     #Reset the status bar icons by first removing them
-    user.engine_mimic("status bar remove microphone")
+    mimic("status bar remove microphone")
     sleep(300ms)
-    user.engine_mimic("status bar remove mode indicator")
+    mimic("status bar remove mode indicator")
     sleep(300ms)
     #And then add them again
-    user.engine_mimic("status bar add microphone")
+    mimic("status bar add microphone")
     sleep(300ms)
-    user.engine_mimic("status bar add mode indicator")
+    mimic("status bar add mode indicator")
 
 program close: user.close_program()
 

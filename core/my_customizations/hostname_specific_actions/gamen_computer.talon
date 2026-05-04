@@ -25,7 +25,7 @@ hostname: Gamen
 #Can improve this voice command by first checking if the snipping tool is in focus, and if it is just run key(ctrl-n) 
 ^grab screen selection$:
     user.toggle_talon_microphone()
-    user.engine_mimic("event log clear logs")
+    mimic("event log clear logs")
     key(super-ctrl-1)
     sleep(300ms)
     key(ctrl-n)
