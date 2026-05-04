@@ -120,7 +120,7 @@ class UserActions:
         #actions.sleep("400ms")
         #actions.key("enter")
         #Using Rango commands
-        actions.user.rango_command_without_target("focusTabByText", search_str)
+        actions.user.rango_focus_tab_by_text(search_str)
 
     def open_browser_profile_switcher(browser: str):
         if actions.user.current_app(browser) == False:

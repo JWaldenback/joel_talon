@@ -246,7 +246,8 @@ class Actions:
         y = amount * settings.get("user.mouse_wheel_down_amount")
         actions.mouse_scroll(y)
 
-    # Rango intercepts the regular `mouse_scroll_*` actions when browsing.
+    # Rango intercepts the regular `mouse_scroll_*` actions when browsing
+    # (override defined in https://github.com/JWaldenback/rango-talon/blob/main/my_customizations.py).
     # These no-rango variants exist so commands like `downer here` can scroll
     # without being hijacked by Rango.
     def mouse_scroll_up_no_rango(amount: float = 1):
