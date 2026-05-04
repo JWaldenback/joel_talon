@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from pathlib import Path
 
 from talon import Context, Module, actions, app, ctrl, imgui, settings, ui
 
@@ -36,7 +37,27 @@ mod.setting(
 
 
 ##### My customizations #####
-eye_tracking = "hiss control"
+_EYE_TRACKING_MODE_FILE = Path(__file__).resolve().parents[2] / "stored_state" / "eye_tracking_mode"
+_VALID_EYE_TRACKING_MODES = {"gaze control", "hiss control"}
+
+
+def _load_eye_tracking_mode() -> str:
+    try:
+        value = _EYE_TRACKING_MODE_FILE.read_text(encoding="utf-8").strip()
+    except OSError:
+        return "gaze control"
+    return value if value in _VALID_EYE_TRACKING_MODES else "gaze control"
+
+
+def _save_eye_tracking_mode(value: str) -> None:
+    try:
+        _EYE_TRACKING_MODE_FILE.parent.mkdir(parents=True, exist_ok=True)
+        _EYE_TRACKING_MODE_FILE.write_text(value, encoding="utf-8")
+    except OSError as exc:
+        actions.print(f"Failed to persist eye tracking mode: {exc}")
+
+
+eye_tracking = _load_eye_tracking_mode()
 
 
 def get_eye_tracking_variable():
@@ -158,6 +179,7 @@ class Actions:
         """Switch eye tracking to gaze-control mode (hiss triggers scroll)"""
         global eye_tracking
         eye_tracking = "gaze control"
+        _save_eye_tracking_mode(eye_tracking)
         actions.tracking.control_gaze_toggle(True)
         actions.tracking.control_head_toggle(True)
 
@@ -165,6 +187,7 @@ class Actions:
         """Switch eye tracking to hiss-control mode (hiss toggles gaze/head tracking)"""
         global eye_tracking
         eye_tracking = "hiss control"
+        _save_eye_tracking_mode(eye_tracking)
         actions.tracking.control_gaze_toggle(False)
         actions.tracking.control_head_toggle(False)
 
