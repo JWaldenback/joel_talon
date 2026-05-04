@@ -1,18 +1,17 @@
 #custom vscode commands go here
 app: vscode
 -
+
 tag(): user.find_and_replace
 tag(): user.line_commands
 tag(): user.multiple_cursors
 tag(): user.splits
 tag(): user.tabs
+tag(): user.command_search
+
 window reload: user.vscode("workbench.action.reloadWindow")
 window close: user.vscode("workbench.action.closeWindow")
 #multiple_cursor.py support end
-
-please [<user.text>]:
-    user.vscode("workbench.action.showCommands")
-    insert(user.text or "")
 
 go view [<user.text>]:
     user.vscode("workbench.action.openView")
@@ -60,7 +59,6 @@ show snippets: user.vscode("workbench.action.openSnippets")
 
 # VSCode Snippets
 snip (last | previous): user.vscode("jumpToPrevSnippetPlaceholder")
-snip next: user.vscode("jumpToNextSnippetPlaceholder")
 
 # Display
 centered switch: user.vscode("workbench.action.toggleCenteredLayout")
@@ -124,7 +122,7 @@ refactor rename: user.vscode("editor.action.rename")
 refactor this: user.vscode("editor.action.refactor")
 
 #code navigation
-(go declaration | follow): user.vscode("editor.action.revealDefinition")
+go declaration | follow: user.vscode("editor.action.revealDefinition")
 go back: user.vscode("workbench.action.navigateBack")
 go forward: user.vscode("workbench.action.navigateForward")
 go implementation: user.vscode("editor.action.goToImplementation")
@@ -250,7 +248,6 @@ terminal <number_small>: user.vscode_terminal(number_small)
 task run [<user.text>]:
     user.vscode("workbench.action.tasks.runTask")
     insert(user.text or "")
-#TODO: should this be added to linecommands?
 copy line down: user.vscode("editor.action.copyLinesDownAction")
 copy line up: user.vscode("editor.action.copyLinesUpAction")
 

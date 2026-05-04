@@ -2,12 +2,13 @@ import re
 
 from talon import Context, Module
 
-from ..user_settings import get_list_from_csv
+from ..user_settings import track_csv_list
 
 mod = Module()
+ctx = Context()
 mod.list("abbreviation", desc="Common abbreviation")
 
-"""
+abbreviations_list = {}
 abbreviations = {
     "J peg": "jpg",
     "abbreviate": "abbr",
@@ -445,92 +446,6 @@ abbreviations = {
     "window": "win",
     "windows kernel": "ntoskrnl",
     "work in progress": "wip",
-}
-"""
-
-abbreviations = {
-    "administrator": "admin ",
-    "administrators": "admins ",
-    "alternative": "alt ",
-    "application": "app ",
-    "applications": "apps ",
-    "argument": "arg ",
-    "arguments": "args ",
-    "as far as i can tell": "afaict ",
-    "as far as i know": "afaik ",
-    "at the moment": "atm ",
-    "authenticate": "auth ",
-    "authentication": "auth ",
-    "away from keyboard": "afk ",
-    "boolean": "bool ",
-    "centimeter": "cm ",
-    "character": "char ",
-    "command": "cmd ",
-    "conference": "conf ",
-    "control": "ctrl ",
-    "constant": "const ",
-    "coordinate": "coord ",
-    "coordinates": "coords ",
-    "database": "db ",
-    "definition": "def ",
-    "description": "desc ",
-    "develop": "dev ",
-    "development": "dev ",
-    "dictation": "dict ",
-    "dictionary": "dict ",
-    "document": "doc ",
-    "documents": "docs ",
-    "environment": "env ",
-    "escape": "esc ",
-    "etcetera": "etc ",
-    "function": "func ",
-    "hypertext": "http ",
-    "image": "img ",
-    "information": "info ",
-    "initialize": "init ",
-    "in real life": "irl ",
-    "integer": "int ",
-    "iterate": "iter ",
-    "javascript": "js ",
-    "jason": "json ",
-    "kilogram": "kg ",
-    "kilometer": "km ",
-    "length": "len ",
-    "library": "lib ",
-    "markdown": "md ",
-    "microphone": "mic ",
-    "milligram": "mg ",
-    "millisecond": "ms ",
-    "miscellaneous": "misc ",
-    "nano second": "ns ",
-    "number": "num ",
-    "okay": "OK ",
-    "operating system": "os ",
-    "package": "pkg ",
-    "parameter": "param ",
-    "parameters": "params ",
-    "pixel": "px ",
-    "point": "pt ",
-    "previous": "prev ",
-    "python": "py ",
-    "regular expression": "regex ",
-    "regular expressions": "regex ",
-    "repel": "repl ",
-    "standard in": "stdin ",
-    "standard out": "stdout ",
-    "string": "str ",
-    "structure": "struct ",
-    "synchronize": "sync ",
-    "synchronous": "sync ",
-    "table of contents": "ToC ",
-    "technology": "tech ",
-    "temperature": "temp ",
-    "temporary": "tmp ",
-    "utilities": "utils ",
-    "utility": "util ",
-    "variable": "var ",
-    "versus": "vs ",
-    "what the fuck": "wtf ",
 
     # My own additions
     "for example": "e.g. ",
@@ -546,7 +461,6 @@ abbreviations = {
     "as soon as possible": "asap ",
     "work in progress": "WIP ",
     "good day": "G'day ",
-    "Post Affiliate Pro": "PAP ",
     "to factor authentication": "2FA ",
     "laugh out loud": "Lol ",
     "Stockholm": "Sthlm ",
@@ -564,7 +478,6 @@ abbreviations = {
     "largest contentful paint": "LCP ",
     "cumulative layout shift": "CLS ",
     "first input delay": "FID ",
-    "Vladimir": "Vlad ",
     "call to action": "CTA ",
     "amazon web services": "AWS ",
     "amazon cloud services": "AWS ",
@@ -575,24 +488,31 @@ abbreviations = {
     #"": " ",
 }
 
-# This variable is also considered exported for the create_spoken_forms module
-abbreviations_list = get_list_from_csv(
-    "abbreviations.csv",
-    headers=("Abbreviation", "Spoken Form"),
-    default=abbreviations,
+
+@mod.capture(rule="brief {user.abbreviation}")
+def abbreviation(m) -> str:
+    return m.abbreviation
+
+
+@track_csv_list(
+    "abbreviations.csv", headers=("Abbreviation", "Spoken Form"), default=abbreviations
 )
+def on_abbreviations(values):
+    global abbreviations_list
 
-# Matches letters and spaces, as currently, Talon doesn't accept other characters in spoken forms.
-PATTERN = re.compile(r"^[a-zA-Z ]+$")
-abbreviation_values = {
-    v: v for v in abbreviations_list.values() if PATTERN.match(v) is not None
-}
+    # note: abbreviations_list is  imported by the create_spoken_forms module
+    abbreviations_list = values
 
-# Allows the abbreviated/short form to be used as spoken phrase. eg "brief app" -> app
-abbreviations_list_with_values = {
-    **abbreviation_values,
-    **abbreviations_list,
-}
+    # Matches letters and spaces, as currently, Talon doesn't accept other characters in spoken forms.
+    PATTERN = re.compile(r"^[a-zA-Z ]+$")
+    abbreviation_values = {
+        v: v for v in abbreviations_list.values() if PATTERN.match(v) is not None
+    }
 
-ctx = Context()
-ctx.lists["user.abbreviation"] = abbreviations_list_with_values
+    # Allows the abbreviated/short form to be used as spoken phrase. eg "brief app" -> app
+    abbreviations_list_with_values = {
+        **{v: v for v in abbreviation_values.values()},
+        **abbreviations_list,
+    }
+
+    ctx.lists["user.abbreviation"] = abbreviations_list_with_values

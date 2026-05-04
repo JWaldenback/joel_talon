@@ -14,7 +14,7 @@ form new: key(shift-o)
 (undo | undo it): key(ctrl-z)
 (redo | redo it): key(ctrl-shift-z)
 
-rename: key(n)
+rename: key(ctrl-alt-n)
 
 video (play | pause): key(k)
 video (mute | unmute): key(m)

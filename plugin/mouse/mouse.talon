@@ -10,7 +10,7 @@ run calibration: tracking.calibrate()
 
 touch:
     # close zoom if open
-    user.zoom_close()
+    tracking.zoom_cancel()
     mouse_click(0)
     # close the mouse grid if open
     user.grid_close()
@@ -20,14 +20,14 @@ touch:
 
 righty:
     # close zoom if open
-    user.zoom_close()
+    tracking.zoom_cancel()
     mouse_click(1)
     # close the mouse grid if open
     user.grid_close()
 
 mid click:
     # close zoom if open
-    user.zoom_close()
+    tracking.zoom_cancel()
     mouse_click(2)
     # close the mouse grid
     user.grid_close()
@@ -41,7 +41,7 @@ mid click:
 #super = windows key
 <user.modifiers> touch:
     # close zoom if open
-    user.zoom_close()
+    tracking.zoom_cancel()
     key("{modifiers}:down")
     mouse_click(0)
     key("{modifiers}:up")
@@ -49,19 +49,20 @@ mid click:
     user.grid_close()
 <user.modifiers> righty:
     # close zoom if open
-    user.zoom_close()
+    tracking.zoom_cancel()
     key("{modifiers}:down")
     mouse_click(1)
     key("{modifiers}:up")
     # close the mouse grid
     user.grid_close()
-(dub click | duke):
+dub click | duke:
     # close zoom if open
-    user.zoom_close()
+    tracking.zoom_cancel()
     mouse_click()
     mouse_click()
     # close the mouse grid
     user.grid_close()
+<<<<<<< HEAD
 (trip click | trip lick):
 	mouse_click()
 	mouse_click()
@@ -69,14 +70,25 @@ mid click:
 	# close the mouse grid
 	user.grid_close()
 (left drag | drag | drag start):
+=======
+trip click | trip lick:
     # close zoom if open
-    user.zoom_close()
+    tracking.zoom_cancel()
+    mouse_click()
+    mouse_click()
+    mouse_click()
+    # close the mouse grid
+    user.grid_close()
+left drag | drag | drag start:
+>>>>>>> upstream/main
+    # close zoom if open
+    tracking.zoom_cancel()
     user.mouse_drag(0)
     # close the mouse grid
     user.grid_close()
 (right drag | right drag start):
     # close zoom if open
-    user.zoom_close()
+    tracking.zoom_cancel()
     user.mouse_drag(1)
     # close the mouse grid
     user.grid_close()
@@ -92,6 +104,7 @@ downer tiny: user.mouse_scroll_down(0.2)
 downer tiny center:
     user.mouse_move_center_active_window()
     user.mouse_scroll_down(0.2)
+<<<<<<< HEAD
 downer (continuous | continue): user.mouse_scroll_down_continuous()
 downer (continuous | continue) center:
     user.mouse_move_center_active_window()
@@ -99,6 +112,10 @@ downer (continuous | continue) center:
 upper: user.mouse_scroll_up()
 upper here: user.mouse_scroll_up_no_rango()
 upper center:
+=======
+wheel up: user.mouse_scroll_up()
+wheel up here:
+>>>>>>> upstream/main
     user.mouse_move_center_active_window()
     user.mouse_scroll_up()
 upper all: user.mouse_scroll_up(99)
@@ -107,6 +124,7 @@ upper tiny: user.mouse_scroll_up(0.2)
 upper tiny center:
     user.mouse_move_center_active_window()
     user.mouse_scroll_up(0.2)
+<<<<<<< HEAD
 upper (continuous | continue): user.mouse_scroll_up_continuous()
 upper (continuous | continue) center:
     user.mouse_move_center_active_window()
@@ -140,6 +158,39 @@ curse no:
     # Command added 2021-12-13, can remove after 2022-06-01
     app.notify("Please activate the user.mouse_cursor_commands_enable tag to enable this command")
 
+=======
+wheel gaze: user.mouse_gaze_scroll()
+wheel gaze here:
+    user.mouse_move_center_active_window()
+    user.mouse_gaze_scroll()
+wheel left: user.mouse_scroll_left()
+wheel left here:
+    user.mouse_move_center_active_window()
+    user.mouse_scroll_left()
+wheel tiny left: user.mouse_scroll_left(0.5)
+wheel tiny left here:
+    user.mouse_move_center_active_window()
+    user.mouse_scroll_left(0.5)
+wheel right: user.mouse_scroll_right()
+wheel right here:
+    user.mouse_move_center_active_window()
+    user.mouse_scroll_right()
+wheel tiny right: user.mouse_scroll_right(0.5)
+wheel tiny right here:
+    user.mouse_move_center_active_window()
+    user.mouse_scroll_right(0.5)
+wheel {user.continuous_scrolling_direction}:
+    user.mouse_scroll_continuous(continuous_scrolling_direction)
+wheel {user.continuous_scrolling_direction} here:
+    user.mouse_move_center_active_window()
+    user.mouse_scroll_continuous(continuous_scrolling_direction)
+wheel {user.continuous_scrolling_direction} <number_small>:
+    user.mouse_scroll_continuous(continuous_scrolling_direction, number_small)
+wheel {user.continuous_scrolling_direction} here <number_small>:
+    user.mouse_move_center_active_window()
+    user.mouse_scroll_continuous(continuous_scrolling_direction, number_small)
+copy mouse position: user.copy_mouse_position()
+>>>>>>> upstream/main
 # To scroll with a hiss sound, set mouse_enable_hiss_scroll to true in settings.talon
 mouse hiss up: user.hiss_scroll_up()
 mouse hiss down: user.hiss_scroll_down()

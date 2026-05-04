@@ -86,7 +86,7 @@ def calculate_rule_info():
         filename = current_command[0].target.filename
         rule = " ".join(current_command[1]._unmapped)
         return f'\nTriggered from "{rule}" ({filename}:{start_line})'
-    except Exception as e:
+    except:
         return ""
 
 
@@ -140,7 +140,7 @@ class Actions:
         msg = (
             f'The "{name}" command is deprecated since {time_deprecated}.'
             f' Instead, say: "{replacement}".'
-            f' See {os.path.join(REPO_DIR, "BREAKING_CHANGES.txt")}'
+            f" See {os.path.join(REPO_DIR, 'BREAKING_CHANGES.txt')}"
         )
         warnings.warn(msg, DeprecationWarning)
 
@@ -156,24 +156,27 @@ class Actions:
 
         msg = (
             f"The `{name}` capture is deprecated since {time_deprecated}."
-            f' See {os.path.join(REPO_DIR, "BREAKING_CHANGES.txt")}'
+            f" See {os.path.join(REPO_DIR, 'BREAKING_CHANGES.txt')}"
             f"{calculate_rule_info()}"
         )
         warnings.warn(msg, DeprecationWarning, stacklevel=3)
 
-    def deprecate_action(time_deprecated: str, name: str):
+    def deprecate_action(time_deprecated: str, name: str, replacement: str = ""):
         """
         Notify the user that the given action is deprecated and should
-        not be used into the future.
+        not be used into the future; the action `replacement` should be used
+        instead.
         """
 
         id = f"action.{name}.{time_deprecated}"
 
         deprecate_notify(id, f"The `{name}` action is deprecated. See log for more.")
+        replacement_msg = f' Instead, use: "{replacement}".' if replacement else ""
 
         msg = (
             f"The `{name}` action is deprecated since {time_deprecated}."
-            f' See {os.path.join(REPO_DIR, "BREAKING_CHANGES.txt")}'
+            f"{replacement_msg}"
+            f" See {os.path.join(REPO_DIR, 'BREAKING_CHANGES.txt')}"
             f"{calculate_rule_info()}"
         )
         warnings.warn(msg, DeprecationWarning, stacklevel=5)

@@ -1,10 +1,10 @@
-from talon import Module, actions, app
+from talon import Module, actions
 
 mod = Module()
 
 
 @mod.action_class
-class user_actions:
+class TabActions:
     def tab_jump(number: int):
         """Jumps to the specified tab"""
         if number < 9:

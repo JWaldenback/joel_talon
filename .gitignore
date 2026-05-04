@@ -3,13 +3,24 @@ __pycache__
 *.sw?
 .idea/
 # Locally generated
-#/settings
+# we highly recommended against removing the private folder from the gitignore file
+# the directory is used to store sensitive information such as contacts
+/private
+.vscode/settings.json
+.DS_Store
+*.bak
+# Emacs (from https://github.com/github/gitignore/blob/main/Global/Emacs.gitignore)
+*~
+\#*\#
+.\#*
+# Vim (from https://github.com/github/gitignore/blob/main/Global/Vim.gitignore)
+[._]*.swp
+# Private
 /settings/system_paths.csv
 /settings/additional_words.csv
 /settings/websites.csv
-.vscode/settings.json
 sdf.py
 sdf.txt
 /core/my_customizations/hostname_specific_actions/gamen_computer_git_ignored.talon
 /apps/my_customizations/jira.talon
-.DS_Store
+.claude/
