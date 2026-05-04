@@ -204,6 +204,7 @@ symbol_key_words = {
     "vest ram": "?",
     "and dash": "–",
     "em dash": "—",
+}
 
 # by convention, symbols should include currency symbols
 symbols.extend(currency_symbols)

@@ -3,7 +3,7 @@ This module gives us the list {user.additional_words} to easily refer to system 
 """
 from talon import Context, Module
 
-from ..user_settings import get_list_from_csv
+from ..user_settings import track_csv_list
 
 mod = Module()
 mod.list("additional_words", desc="List of additional words")
@@ -13,10 +13,15 @@ additional_words_defaults = {
 }
 
 ctx = Context()
-ctx.lists["self.additional_words"] = get_list_from_csv(
+
+
+@track_csv_list(
     "additional_words.csv",
-    headers=("Word(s)", "Spoken Form (If Different)"), default=additional_words_defaults,
+    headers=("Word(s)", "Spoken Form (If Different)"),
+    default=additional_words_defaults,
 )
+def on_additional_words(values):
+    ctx.lists["self.additional_words"] = values
 
 """
 # We need to wait for ready before we can call "actions.path.talon_home()" and

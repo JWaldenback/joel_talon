@@ -295,9 +295,9 @@ class UserActions:
     """
 
     def toggle_dictation_key_switch():
-        #actions.user.toggle_talon_microphone()
-        #actions.user.start_stop_dictation()
-        actions.key("super-h")
+        actions.user.toggle_talon_microphone()
+        actions.user.start_stop_dictation()
+        #actions.key("super-h")
 
     def close_program():
         """Uses the OS built-in keyboard shortcut to close the program"""
