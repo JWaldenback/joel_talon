@@ -114,23 +114,23 @@ upper (continuous | continue) center:
     user.mouse_move_center_active_window()
     user.mouse_scroll_up_continuous()
 wheel gaze: user.mouse_gaze_scroll()
-wheel gaze here:
+wheel gaze center:
     user.mouse_move_center_active_window()
     user.mouse_gaze_scroll()
 wheel left: user.mouse_scroll_left()
-wheel left here:
+wheel left center:
     user.mouse_move_center_active_window()
     user.mouse_scroll_left()
 wheel tiny left: user.mouse_scroll_left(0.5)
-wheel tiny left here:
+wheel tiny left center:
     user.mouse_move_center_active_window()
     user.mouse_scroll_left(0.5)
 wheel right: user.mouse_scroll_right()
-wheel right here:
+wheel right center:
     user.mouse_move_center_active_window()
     user.mouse_scroll_right()
 wheel tiny right: user.mouse_scroll_right(0.5)
-wheel tiny right here:
+wheel tiny right center:
     user.mouse_move_center_active_window()
     user.mouse_scroll_right(0.5)
 wheel {user.continuous_scrolling_direction}:

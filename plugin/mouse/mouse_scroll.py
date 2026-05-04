@@ -246,6 +246,19 @@ class Actions:
         y = amount * settings.get("user.mouse_wheel_down_amount")
         actions.mouse_scroll(y)
 
+    # Rango intercepts the regular `mouse_scroll_*` actions when browsing.
+    # These no-rango variants exist so commands like `downer here` can scroll
+    # without being hijacked by Rango.
+    def mouse_scroll_up_no_rango(amount: float = 1):
+        """Scrolls up without being intercepted by Rango"""
+        y = amount * settings.get("user.mouse_wheel_down_amount")
+        actions.mouse_scroll(-y)
+
+    def mouse_scroll_down_no_rango(amount: float = 1):
+        """Scrolls down without being intercepted by Rango"""
+        y = amount * settings.get("user.mouse_wheel_down_amount")
+        actions.mouse_scroll(y)
+
     def mouse_scroll_left(amount: float = 1):
         """Scrolls left"""
         x = amount * settings.get("user.mouse_wheel_horizontal_amount")
@@ -337,17 +350,8 @@ class Actions:
         hiss_scroll_up = False
 
 
-@ctx.action_class("user")
-class UserActions:
-    def noise_trigger_hiss(active: bool):
-        if settings.get("user.mouse_enable_hiss_scroll"):
-            if active:
-                if hiss_scroll_up:
-                    actions.user.mouse_scroll_up_continuous()
-                else:
-                    actions.user.mouse_scroll_down_continuous()
-            else:
-                actions.user.mouse_scroll_stop()
+# noise_trigger_hiss is overridden in mouse.py with a mode-aware version that
+# also handles gaze/head toggling. Don't add a competing override here.
 
 
 def mouse_scroll_continuous(
