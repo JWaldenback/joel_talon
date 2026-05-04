@@ -16,11 +16,13 @@ __pycache__
 # Vim (from https://github.com/github/gitignore/blob/main/Global/Vim.gitignore)
 [._]*.swp
 # Private
-/settings/system_paths.csv
-/settings/additional_words.csv
-/settings/websites.csv
+core/system_paths-*.talon-list
+core/vocabulary/vocabulary.talon-list
+core/websites_and_search_engines/website.talon-list
+*.csv-converted-to-talon-list
 sdf.py
 sdf.txt
 /core/my_customizations/hostname_specific_actions/gamen_computer_git_ignored.talon
 /apps/my_customizations/jira.talon
 .claude/
+stored_state
