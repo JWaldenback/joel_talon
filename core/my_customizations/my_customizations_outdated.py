@@ -79,9 +79,8 @@ class UserActions:
     # Previous version: bundled mic toggle with eye-tracking enable/disable
     # logic. Replaced because the bundled tracking branch could intercept the
     # mic toggle (e.g. when control_enabled() returned False the function
-    # re-enabled tracking instead of muting). Tracking is now controlled by
-    # the dedicated `gaze control on` / `hiss control on` / `no eye tracker`
-    # voice commands and by the Windows dictation watcher.
+    # re-enabled tracking instead of muting). It also did not properly support
+    # the "No Eye Tracker" mode in practice.
     def toggle_talon_microphone():
         current_microphone = actions.sound.active_microphone()
         eye_tracking = get_eye_tracking_variable()
@@ -123,17 +122,30 @@ class UserActions:
             actions.user.mouse_sleep()
     """
 
-    # Note: this simplified version currently doesn't support the
-    # "No Eye Tracker" mode (i.e. it doesn't branch on the eye-tracking
-    # mode at all — it just toggles the mic regardless of mode).
+    # Toggling the mic OFF also disables the eye tracker so it stops logging
+    # eye movements. Toggling ON re-enables tracking based on the current
+    # eye_tracking mode — the mode setting itself persists across the toggle,
+    # so nothing extra needs to be remembered. In "no eye tracker" mode the
+    # tracker actions are skipped entirely.
     def toggle_talon_microphone():
         current_microphone = actions.sound.active_microphone()
+        eye_tracking = get_eye_tracking_variable()
+
         if current_microphone == "None":
+            # Mic is currently OFF -> turn ON and restore tracking for the mode
             actions.user.hud_add_log('success', 'ON')
             actions.user.hud_toggle_microphone()
+            if eye_tracking == "gaze control":
+                actions.user.mouse_wake()
+            elif eye_tracking == "hiss control":
+                actions.tracking.control_toggle(True)
+                actions.tracking.control_gaze_toggle(False)
         else:
+            # Mic is currently ON -> turn OFF and pause tracking
             actions.user.hud_add_log('error', 'OFF')
             actions.user.hud_toggle_microphone()
+            if eye_tracking != "no eye tracker":
+                actions.user.mouse_sleep()
 
 
     def start_stop_dictation():
