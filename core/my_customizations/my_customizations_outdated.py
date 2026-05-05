@@ -75,6 +75,13 @@ class UserActions:
             actions.user.mouse_sleep()
     """
 
+    """
+    # Previous version: bundled mic toggle with eye-tracking enable/disable
+    # logic. Replaced because the bundled tracking branch could intercept the
+    # mic toggle (e.g. when control_enabled() returned False the function
+    # re-enabled tracking instead of muting). Tracking is now controlled by
+    # the dedicated `gaze control on` / `hiss control on` / `no eye tracker`
+    # voice commands and by the Windows dictation watcher.
     def toggle_talon_microphone():
         current_microphone = actions.sound.active_microphone()
         eye_tracking = get_eye_tracking_variable()
@@ -114,6 +121,19 @@ class UserActions:
             actions.user.hud_add_log('error', 'OFF') #Mic and eye tracking disabled
             actions.user.hud_toggle_microphone()
             actions.user.mouse_sleep()
+    """
+
+    # Note: this simplified version currently doesn't support the
+    # "No Eye Tracker" mode (i.e. it doesn't branch on the eye-tracking
+    # mode at all — it just toggles the mic regardless of mode).
+    def toggle_talon_microphone():
+        current_microphone = actions.sound.active_microphone()
+        if current_microphone == "None":
+            actions.user.hud_add_log('success', 'ON')
+            actions.user.hud_toggle_microphone()
+        else:
+            actions.user.hud_add_log('error', 'OFF')
+            actions.user.hud_toggle_microphone()
 
 
     def start_stop_dictation():
