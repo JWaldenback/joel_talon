@@ -33,8 +33,6 @@ virtual keyboard: key(super-ctrl-o)
 #https://support.microsoft.com/en-us/windows/eye-control-basics-in-windows-97d68837-b993-8462-1f9d-3c957117b1cf
 #https://blakewatson.com/journal/writing-and-coding-with-the-macos-accessibility-keyboard/
 
-talon (relaunch | restart): user.talon_relaunch()
-
 clipboard [open | history | windows]: key(super-v)
 
 show desktop: key(super-d)

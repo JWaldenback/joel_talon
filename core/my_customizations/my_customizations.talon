@@ -60,6 +60,9 @@ talon hood (relaunch | restart):
 
 program close: user.close_program()
 
+^talon (relaunch | restart)$: user.talon_relaunch()
+^talon close$: user.talon_close()
+
 #System wide toggle huddle function. Works only if one uses the Slack desktop app, not the Slack web app
 #slack (huddle | call) (new | join): 
 #    user.slack_toggle_huddle()

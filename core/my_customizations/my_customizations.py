@@ -58,6 +58,9 @@ class Actions:
     def talon_relaunch():
         """Quit and relaunch the Talon app"""
 
+    def talon_close():
+        """Quit the Talon app without relaunching"""
+
     def toggle_talon_microphone():
         """Toggle the Talon microphone on/off using talon_HUD actions (please note: talon_HUD must be installed in the talon user folder for this function to work)"""
 
@@ -166,7 +169,12 @@ class UserActions:
                 ],
                 start_new_session=True,
             )
-            talon_app.quit()  
+            talon_app.quit()
+
+    def talon_close():
+        """Quit the Talon app without relaunching"""
+        talon_app = ui.apps(pid=os.getpid())[0]
+        talon_app.quit()
 
     """
     #If gaze control should be enabled when using the eye tracker

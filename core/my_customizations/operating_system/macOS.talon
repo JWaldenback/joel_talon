@@ -14,4 +14,3 @@ start listening:
     #key(alt-shift-2)
     user.toggle_dictation_voice_command()
 
-talon (relaunch | restart): user.talon_relaunch()
