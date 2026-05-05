@@ -30,13 +30,13 @@ hostname: Gamen
     sleep(300ms)
     key(ctrl-n)
 
-gaze control on:
+gaze mode:
     user.enable_gaze_control()
 
-no eye tracker:
+no eye tracker mode:
     user.enable_no_eye_tracker_mode()
 
-hiss control on:
+hiss mode:
     user.enable_hiss_control()
 
 ^use both eyes$:
