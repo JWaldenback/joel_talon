@@ -30,55 +30,20 @@ hostname: Gamen
     sleep(300ms)
     key(ctrl-n)
 
-gaze control on: 
+gaze control on:
     user.enable_gaze_control()
-    #Enable "use both eyes" setting
-    key(super-b)
-    key(right)
-    sleep(300ms)
-    key(enter)
-    sleep(300ms)
-    key(up:6)
-    sleep(300ms)
-    key(enter)
-    sleep(300ms)
-    key(up:3)
-    sleep(300ms)
-    key(enter)
 
 no eye tracker:
     user.enable_no_eye_tracker_mode()
 
 hiss control on:
     user.enable_hiss_control()
-    #Enable "use only left eye" setting
-    key(super-b)
-    key(right)
-    sleep(300ms)
-    key(enter)
-    sleep(300ms)
-    key(up:6)
-    sleep(300ms)
-    key(enter)
-    sleep(300ms)
-    key(up:2)
-    sleep(300ms)
-    key(enter)
 
 ^use both eyes$:
-    key(super-b)
-    key(right)
-    key(enter)
-    key(up:6)
-    key(enter)
-    key(up:3)
-    key(enter)
+    user.set_eye_tracking_mask("both")
 
 ^use only left eye$:
-    key(super-b)
-    key(right)
-    key(enter)
-    key(up:6)
-    key(enter)
-    key(up:2)
-    key(enter)
+    user.set_eye_tracking_mask("left")
+
+^use only right eye$:
+    user.set_eye_tracking_mask("right")

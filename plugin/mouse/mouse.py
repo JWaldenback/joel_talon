@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from talon import Context, Module, actions, app, ctrl, imgui, settings, ui
+from talon.plugins.eye_mouse_2 import set_eye_mask
 
 mod = Module()
 ctx = Context()
@@ -182,6 +183,7 @@ class Actions:
         _save_eye_tracking_mode(eye_tracking)
         actions.tracking.control_gaze_toggle(True)
         actions.tracking.control_head_toggle(True)
+        set_eye_mask("both")
 
     def enable_hiss_control():
         """Switch eye tracking to hiss-control mode (hiss toggles gaze/head tracking)"""
@@ -190,12 +192,17 @@ class Actions:
         _save_eye_tracking_mode(eye_tracking)
         actions.tracking.control_gaze_toggle(False)
         actions.tracking.control_head_toggle(False)
+        set_eye_mask("left")
 
     def enable_no_eye_tracker_mode():
         """Switch to no-eye-tracker mode so toggles skip eye tracking actions"""
         global eye_tracking
         eye_tracking = "no eye tracker"
         _save_eye_tracking_mode(eye_tracking)
+
+    def set_eye_tracking_mask(mask: str):
+        """Set Talon eye selection. mask is "both", "left", or "right"."""
+        set_eye_mask(mask)
 
 
 # https://talonvoice.com/docs/index.html#talon-noise
