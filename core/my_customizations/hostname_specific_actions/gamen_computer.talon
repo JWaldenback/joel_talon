@@ -46,6 +46,9 @@ gaze control on:
     sleep(300ms)
     key(enter)
 
+no eye tracker:
+    user.enable_no_eye_tracker_mode()
+
 hiss control on:
     user.enable_hiss_control()
     #Enable "use only left eye" setting

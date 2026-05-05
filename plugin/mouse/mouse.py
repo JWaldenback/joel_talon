@@ -38,7 +38,7 @@ mod.setting(
 
 ##### My customizations #####
 _EYE_TRACKING_MODE_FILE = Path(__file__).resolve().parents[2] / "stored_state" / "eye_tracking_mode"
-_VALID_EYE_TRACKING_MODES = {"gaze control", "hiss control"}
+_VALID_EYE_TRACKING_MODES = {"gaze control", "hiss control", "no eye tracker"}
 
 
 def _load_eye_tracking_mode() -> str:
@@ -190,6 +190,12 @@ class Actions:
         _save_eye_tracking_mode(eye_tracking)
         actions.tracking.control_gaze_toggle(False)
         actions.tracking.control_head_toggle(False)
+
+    def enable_no_eye_tracker_mode():
+        """Switch to no-eye-tracker mode so toggles skip eye tracking actions"""
+        global eye_tracking
+        eye_tracking = "no eye tracker"
+        _save_eye_tracking_mode(eye_tracking)
 
 
 # https://talonvoice.com/docs/index.html#talon-noise

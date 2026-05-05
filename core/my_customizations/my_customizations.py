@@ -221,6 +221,19 @@ class UserActions:
         actions.print(current_microphone)
         actions.print(eye_tracking)
         actions.print(actions.tracking.control_enabled())
+
+        # No eye tracker: just toggle the mic; skip all eye tracking actions.
+        # Without this branch, the elif below would loop forever because
+        # control_enabled() always reports False when no tracker is connected.
+        if eye_tracking == "no eye tracker":
+            if current_microphone == "None":
+                actions.user.hud_add_log('success', 'ON')
+                actions.user.hud_toggle_microphone()
+            else:
+                actions.user.hud_add_log('error', 'OFF')
+                actions.user.hud_toggle_microphone()
+            return
+
         if current_microphone == "None":
             #https://github.com/chaosparrot/talon_hud/blob/master/CUSTOMIZATION.md#log-messages
             actions.user.hud_add_log('success', 'ON') #Mic and eye tracking enabled
@@ -240,7 +253,7 @@ class UserActions:
         else:
             actions.user.hud_add_log('error', 'OFF') #Mic and eye tracking disabled
             actions.user.hud_toggle_microphone()
-            actions.user.mouse_sleep()    
+            actions.user.mouse_sleep()
 
 
     def start_stop_dictation():
