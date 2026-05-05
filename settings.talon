@@ -137,3 +137,11 @@ settings():
 # Uncomment the below to enable the experimental window layout commands
 # defined in window_layout.talon
 # tag(): user.experimental_window_layout
+
+# ----------------------------------------------------------------------------
+# My customizations
+# ----------------------------------------------------------------------------
+settings():
+    # If `true`, watch for Windows voice typing (Win+H) and auto-pause Talon
+    # speech + mouse while it's listening. Set to 0 to disable.
+    user.windows_dictation_watch_enabled = 1
