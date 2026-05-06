@@ -181,6 +181,7 @@ class Actions:
         global eye_tracking
         eye_tracking = "gaze control"
         _save_eye_tracking_mode(eye_tracking)
+        actions.tracking.control_toggle(True)
         actions.tracking.control_gaze_toggle(True)
         actions.tracking.control_head_toggle(True)
         set_eye_mask("both")
@@ -190,6 +191,7 @@ class Actions:
         global eye_tracking
         eye_tracking = "hiss control"
         _save_eye_tracking_mode(eye_tracking)
+        actions.tracking.control_toggle(True)
         actions.tracking.control_gaze_toggle(False)
         actions.tracking.control_head_toggle(False)
         set_eye_mask("left")
