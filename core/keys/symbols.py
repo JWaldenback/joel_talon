@@ -54,6 +54,7 @@ currency_symbols = [
     Symbol("€", ["euro sign"], ["euro"]),
 ]
 
+#Symbol(character, command_and_dictation_forms=None, command_forms=None)
 symbols = [
     Symbol("`", ["back tick"], ["grave"]),
     Symbol(",", ["comma", "coma"]),
@@ -91,120 +92,6 @@ symbols = [
     Symbol('"', None, ["dub quote", "double quote"]),
 ]
 
-# `punctuation_words` is for words you want available BOTH in dictation and as key names in command mode.
-# `symbol_key_words` is for key names that should be available in command mode, but NOT during dictation.
-punctuation_words = {
-    # TODO: I'm not sure why we need these, I think it has something to do with
-    # Dragon. Possibly it has been fixed by later improvements to talon? -rntz
-    "`": "`",
-    ",": ",",  # <== these things
-    "back tick": "`",
-    "comma": ",",
-    # Workaround for issue with conformer b-series; see #946
-    "coma": ",",
-    "period": ".",
-    "full stop": ".",
-    "semicolon": ";",
-    "colon": ":",
-    "forward slash": "/",
-    "question mark": "?",
-    "exclamation mark": "!",
-    "exclamation": "!",
-    #"exclamation point": "!",
-    "asterisk": "*",
-    "hash sign": "#",
-    "number sign": "#",
-    "percent sign": "%",
-    "at sign": "@",
-    "and sign": "&",
-    "ampersand": "&",
-    "amper sign": "&",
-    # Currencies
-    "dollar sign": "$",
-    "pound sign": "£",
-    "hyphen": "-",
-    "L paren": "(",
-    "left paren": "(",
-    "R paren": ")",
-    "right paren": ")",
-
-    #My additions
-    "dash sign": "-",
-    "euro sign": "€",
-}
-symbol_key_words = {
-    "dot": ".",
-    "point": ".",
-    "quote": "'",
-    "quest": "?",    
-    "question": "?",
-    "apostrophe": "'",
-    "L square": "[",
-    "left square": "[",
-    "brack": "[",
-    "bracket": "[",
-    "left bracket": "[",
-    "square": "[",
-    "R square": "]",
-    "right square": "]",
-    "r brack": "]",
-    "r bracket": "]",
-    "right bracket": "]",
-    "slash": "/",
-    "backslash": "\\",
-    "minus": "-",
-    #"dash": "-",
-    "equals": "=",
-    "plus": "+",
-    "grave": "`",
-    "tilde": "~",
-    "bang": "!",
-    "exclamation": "!",
-    "down score": "_",
-    "underscore": "_",
-    "paren": "(",
-    "brace": "{",
-    "left brace": "{",
-    "curly": "{",
-    "left curly": "{",    
-    #"curly bracket": "{",
-    #"left curly bracket": "{",
-    "r brace": "}",
-    "right brace": "}",
-    "r curly": "}",
-    "right curly": "}",
-    #"r curly bracket": "}",
-    #"right curly bracket": "}",
-    "angle": "<",
-    "left angle": "<",
-    #"less than": "<",
-    "rangle": ">",
-    "R angle": ">",
-    "right angle": ">",
-    #"greater than": ">",
-    #"star": "*",
-    #"hash": "#", #removed this one as it was often misinterpreted as `dash`
-    "percent": "%",
-    #"caret": "^",
-    "caret sign": "^",
-    #"amper": "&",
-    "pipe": "|",
-    "dub quote": '"',
-    "double quote": '"',
-    # Currencies
-    #"dollar": "$",
-    #"pound": "£",
-
-    #My additions
-    #"semistack": ";",
-    #"stack": ":",
-    #"drip": ",",
-    "vest ten": "?",
-    #"vest one": "?",
-    "vest ram": "?",
-    "and dash": "–",
-    "em dash": "—",
-}
 
 # by convention, symbols should include currency symbols
 symbols.extend(currency_symbols)

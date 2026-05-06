@@ -13,8 +13,15 @@ escape: escape
 space: space
 tab: tab
 insert: insert
-wipe: backspace
-delete: backspace
-forward delete: delete
+#wipe: backspace
+clear: backspace
+delete: delete
+#forward delete: delete
 menu key: menu
 print screen: printscr
+void: space
+blank: space
+slap: enter
+end key: end
+home key: home
+tab key: tab
