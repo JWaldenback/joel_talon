@@ -4,10 +4,11 @@ windows search: key(super-s)
 
 #(start | stop) dictation: user.start_stop_dictation()
 
-start listening: 
+start listening:
     #set keyboard to English
     key(alt-shift-1)
     user.toggle_dictation_voice_command()
+    user.voice_dictation_arm_keypress_resume()
 
 #börja lyssna/starta diktering
 (burial listener | burial alister):
@@ -15,6 +16,7 @@ start listening:
     #set keyboard to Swedish
     key(alt-shift-2)
     user.toggle_dictation_voice_command()
+    user.voice_dictation_arm_keypress_resume()
     
 (lang | language) change: key(alt-shift)
 #https://www.digitalcitizen.life/keyboard-language-shortcut/

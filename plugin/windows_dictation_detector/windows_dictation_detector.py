@@ -78,6 +78,10 @@ def _tick():
         app.notify("Talon paused: Windows Dictation active")
     elif not active and _state["active"]:
         _state["active"] = False
+        try:
+            actions.user.voice_dictation_disarm_keypress_resume()
+        except Exception:
+            pass
         if _state["disabled_by_us"]:
             try:
                 actions.speech.enable()

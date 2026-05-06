@@ -227,4 +227,5 @@ class UserActions:
     def toggle_dictation_key_switch():
         actions.user.toggle_talon_microphone()
         actions.user.start_stop_dictation()
+        actions.user.voice_dictation_arm_keypress_resume()
         #actions.key("super-h")
