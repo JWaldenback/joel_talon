@@ -180,7 +180,8 @@ class UserActions:
         pass
 
     def keypad_1_down():
-        actions.user.toggle_dictation_key_switch()
+        pass
+        #actions.user.toggle_dictation_key_switch()
 
     def keypad_1_up():
         pass
