@@ -2,6 +2,7 @@ list: user.letter
 -
 air: a
 any: a
+bat: b
 bell: b
 cap: c
 drum: d
@@ -15,6 +16,8 @@ crunch: k
 look: l
 made: m
 net: n
+near: n
+odd: o
 oak: o
 perk: p
 quench: q
