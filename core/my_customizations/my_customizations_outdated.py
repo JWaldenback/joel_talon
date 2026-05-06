@@ -16,6 +16,23 @@ from ...plugin.mouse.mouse import get_eye_tracking_variable
 mod = Module()
 
 
+# Remembers the last non-"None" microphone so we can restore it when the
+# user toggles the mic back on without depending on talon_hud.
+_previous_microphone = "System Default"
+
+
+def _disable_microphone():
+    global _previous_microphone
+    current = actions.sound.active_microphone()
+    if current != "None":
+        _previous_microphone = current
+    actions.speech.set_microphone("None")
+
+
+def _restore_microphone():
+    actions.speech.set_microphone(_previous_microphone)
+
+
 @mod.action_class
 class Actions:
     def toggle_talon_microphone():
@@ -134,7 +151,7 @@ class UserActions:
         if current_microphone == "None":
             # Mic is currently OFF -> turn ON and restore tracking for the mode
             actions.user.hud_add_log('success', 'ON')
-            actions.user.hud_toggle_microphone()
+            _restore_microphone()
             if eye_tracking == "gaze control":
                 actions.user.mouse_wake()
             elif eye_tracking == "hiss control":
@@ -143,7 +160,7 @@ class UserActions:
         else:
             # Mic is currently ON -> turn OFF and pause tracking
             actions.user.hud_add_log('error', 'OFF')
-            actions.user.hud_toggle_microphone()
+            _disable_microphone()
             if eye_tracking != "no eye tracker":
                 actions.user.mouse_sleep()
 
