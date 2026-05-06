@@ -121,6 +121,17 @@ class Actions:
         if eye_tracking_state.control1:
             actions.tracking.control1_toggle(True)
 
+        # In gaze/hiss modes, control mouse should always be on after a wake.
+        # The saved snapshot can be stale when mouse_sleep runs twice before
+        # a wake (e.g. numpad-divide mic toggle overlapping with the Windows
+        # dictation watcher), which would otherwise leave control mouse off.
+        if eye_tracking == "gaze control":
+            actions.tracking.control_toggle(True)
+            actions.tracking.control_gaze_toggle(True)
+            actions.tracking.control_head_toggle(True)
+        elif eye_tracking == "hiss control":
+            actions.tracking.control_toggle(True)
+
         if settings.get("user.mouse_wake_hides_cursor"):
             actions.user.mouse_cursor_hide()
 
