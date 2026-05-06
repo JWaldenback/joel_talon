@@ -12,7 +12,7 @@ mod.setting(
 mod.setting(
     "windows_dictation_poll_ms",
     type=int,
-    default=400,
+    default=300,
     desc="Polling interval in ms for checking if Windows voice typing (Win+H) is actively listening.",
 )
 
