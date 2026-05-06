@@ -199,6 +199,10 @@ class Actions:
         global eye_tracking
         eye_tracking = "no eye tracker"
         _save_eye_tracking_mode(eye_tracking)
+        actions.tracking.control_zoom_toggle(False)
+        actions.tracking.control_toggle(False)
+        actions.tracking.control1_toggle(False)
+        actions.user.mouse_cursor_show()
 
     def set_eye_tracking_mask(mask: str):
         """Set Talon eye selection. mask is "both", "left", or "right"."""
