@@ -198,10 +198,12 @@ class UserActions:
             actions.sleep("500ms")
             actions.user.mouse_wake()
             actions.speech.toggle()
+            actions.user.voice_dictation_disarm_keypress_resume()
         else:
             actions.user.mouse_sleep()
             actions.speech.toggle()
             actions.user.start_stop_dictation()
+            actions.user.voice_dictation_arm_keypress_resume()
 
     """
     def toggle_dictation_key_switch():

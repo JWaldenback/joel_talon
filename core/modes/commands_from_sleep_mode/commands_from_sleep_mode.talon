@@ -20,11 +20,9 @@ mode: sleep
 <number>: skip()
    
 stop listening:
-    user.voice_dictation_disarm_keypress_resume()
     user.toggle_dictation_voice_command()
 
 #sluta lyssna/sluta diktering
 (slut Alister | slut alisa | slut dart listener):
 #| stop public theory | stop public tearing ):
-    user.voice_dictation_disarm_keypress_resume()
     user.toggle_dictation_voice_command()

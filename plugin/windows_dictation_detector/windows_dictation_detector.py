@@ -63,9 +63,8 @@ def _tick():
     if active and not _state["active"]:
         _state["active"] = True
         # If Talon is already in sleep mode, don't touch speech or the mouse.
-        # speech.enable() on resume would wake Talon, and mouse_wake() can
-        # re-enable control mouse (e.g. in gaze/hiss modes) even though sleep
-        # mode wants the mouse to stay disabled.
+        # speech.enable() on resume would wake Talon, and stacking a sleep
+        # here would entangle our restore with the user's "talon wake".
         was_sleeping = "sleep" in scope.get("mode")
         try:
             if was_sleeping or not actions.speech.enabled():

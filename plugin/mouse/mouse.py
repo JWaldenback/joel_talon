@@ -79,6 +79,12 @@ class EyeTrackingState:
 
 eye_tracking_state: EyeTrackingState
 
+# mouse_sleep / mouse_wake are re-entrant: only the outermost sleep takes a
+# snapshot, only the outermost wake restores it. This prevents overlapping
+# callers (e.g. windows_dictation_detector + a voice command) from clobbering
+# each other's saved state.
+_sleep_depth = 0
+
 
 def on_ready():
     global eye_tracking_state
@@ -113,24 +119,15 @@ class Actions:
 
     def mouse_wake():
         """Re-enable eye tracking state and disables cursor"""
-        # restore eye tracking modes enabled as of the last user.mouse_sleep
-        if eye_tracking_state.control_zoom:
-            actions.tracking.control_zoom_toggle(True)
-        if eye_tracking_state.control:
-            actions.tracking.control_toggle(True)
-        if eye_tracking_state.control1:
-            actions.tracking.control1_toggle(True)
-
-        # In gaze/hiss modes, control mouse should always be on after a wake.
-        # The saved snapshot can be stale when mouse_sleep runs twice before
-        # a wake (e.g. numpad-divide mic toggle overlapping with the Windows
-        # dictation watcher), which would otherwise leave control mouse off.
-        if eye_tracking == "gaze control":
-            actions.tracking.control_toggle(True)
-            actions.tracking.control_gaze_toggle(True)
-            actions.tracking.control_head_toggle(True)
-        elif eye_tracking == "hiss control":
-            actions.tracking.control_toggle(True)
+        global _sleep_depth
+        if _sleep_depth > 1:
+            _sleep_depth -= 1
+            return
+        _sleep_depth = 0
+        # Restore the exact snapshot taken at the outermost mouse_sleep.
+        actions.tracking.control_zoom_toggle(eye_tracking_state.control_zoom)
+        actions.tracking.control_toggle(eye_tracking_state.control)
+        actions.tracking.control1_toggle(eye_tracking_state.control1)
 
         if settings.get("user.mouse_wake_hides_cursor"):
             actions.user.mouse_cursor_hide()
@@ -163,19 +160,21 @@ class Actions:
 
     def mouse_sleep():
         """Disables control mouse, zoom mouse, and re-enables cursor"""
-        # save eye tracking state so it can be restored on user.mouse_wake
-        global eye_tracking_state
-        eye_tracking_state.control_zoom = actions.tracking.control_zoom_enabled()
-        eye_tracking_state.control = actions.tracking.control_enabled()
-        eye_tracking_state.control1 = actions.tracking.control1_enabled()
+        global _sleep_depth, eye_tracking_state
+        if _sleep_depth == 0:
+            # Outermost sleep: snapshot current tracking state for restore.
+            eye_tracking_state.control_zoom = actions.tracking.control_zoom_enabled()
+            eye_tracking_state.control = actions.tracking.control_enabled()
+            eye_tracking_state.control1 = actions.tracking.control1_enabled()
 
-        actions.tracking.control_zoom_toggle(False)
-        actions.tracking.control_toggle(False)
-        actions.tracking.control1_toggle(False)
+            actions.tracking.control_zoom_toggle(False)
+            actions.tracking.control_toggle(False)
+            actions.tracking.control1_toggle(False)
 
-        actions.user.mouse_cursor_show()
-        actions.user.mouse_scroll_stop()
-        actions.user.mouse_drag_end()
+            actions.user.mouse_cursor_show()
+            actions.user.mouse_scroll_stop()
+            actions.user.mouse_drag_end()
+        _sleep_depth += 1
 
     def copy_mouse_position():
         """Copy the current mouse position coordinates"""
