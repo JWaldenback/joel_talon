@@ -237,7 +237,18 @@ class UserActions:
         pass
 
     def keypad_divide_down():
-        actions.user.toggle_talon_microphone()
+        # Toggle Talon sleep/wake instead of just the microphone, so that sleep
+        # and mic-mute can't drift out of sync (which left gaze mode active
+        # while the mic was off).
+        from talon import scope
+        if "sleep" in scope.get("mode"):
+            actions.mode.disable("sleep")
+            actions.mode.enable("command")
+        else:
+            actions.mode.disable("command")
+            actions.mode.disable("dictation")
+            actions.mode.enable("sleep")
+        #actions.user.toggle_talon_microphone()
 
     def keypad_divide_up():
         pass
