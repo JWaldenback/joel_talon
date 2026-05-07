@@ -1,4 +1,4 @@
-from talon import Module, actions, app, cron, settings
+from talon import Module, actions, app, cron, scope, settings
 
 mod = Module()
 
@@ -62,8 +62,12 @@ def _tick():
     active = _dictation_active()
     if active and not _state["active"]:
         _state["active"] = True
+        # If Talon is already in sleep mode, leave speech alone. speech.disable()
+        # is a no-op in sleep mode anyway, but speech.enable() on resume would
+        # wake Talon out of sleep — which the user explicitly didn't ask for.
+        was_sleeping = "sleep" in scope.get("mode")
         try:
-            if not actions.speech.enabled():
+            if was_sleeping or not actions.speech.enabled():
                 _state["disabled_by_us"] = False
             else:
                 actions.speech.disable()
