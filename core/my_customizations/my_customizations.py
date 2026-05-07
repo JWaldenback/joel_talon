@@ -24,6 +24,11 @@ def gui_select(gui: imgui.GUI):
         actions.user.select_continous(0)
 
 modifier = ""
+
+# State for toggle_talon_sleep: remembers which mode was active and whether
+# eye-tracking control was on at sleep time, so wake can restore them.
+_mode_before_sleep = "command"
+_control_enabled_before_sleep = False
 @imgui.open(x=700, y=0)
 def gui_hold_modifier(gui: imgui.GUI):
     gui.text(f"Modifier held:")
@@ -78,6 +83,12 @@ class Actions:
 
     def select_continous_end():
         """sdf"""
+
+    def toggle_talon_sleep():
+        """Toggle Talon between sleep mode and the previously active mode
+        (command/dictation), also disabling eye-tracking control on sleep
+        and restoring it on wake. Avoids the half-awake state where mic-mute
+        and sleep drift out of sync."""
 
 ctx=Context()
 
@@ -221,3 +232,21 @@ class UserActions:
     def select_continous_end():
         """sdf"""
         gui_select.hide()
+
+    def toggle_talon_sleep():
+        global _mode_before_sleep, _control_enabled_before_sleep
+        modes = scope.get("mode")
+        if "sleep" in modes:
+            restore = _mode_before_sleep if _mode_before_sleep in ("command", "dictation") else "command"
+            actions.mode.disable("sleep")
+            actions.mode.enable(restore)
+            if _control_enabled_before_sleep:
+                actions.tracking.control_toggle(True)
+        else:
+            _mode_before_sleep = "dictation" if "dictation" in modes else "command"
+            _control_enabled_before_sleep = actions.tracking.control_enabled()
+            actions.tracking.control_gaze_toggle(False)
+            actions.tracking.control_toggle(False)
+            actions.mode.disable("command")
+            actions.mode.disable("dictation")
+            actions.mode.enable("sleep")

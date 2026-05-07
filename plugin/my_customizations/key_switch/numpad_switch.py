@@ -16,13 +16,6 @@ last_state = [False, False, False, False, False, False, False, False, False, Fal
 continuous_firing = [False, False, True, False, True, False, True, False, True, False, False, False, False, False]
 has_fired = [False, False, False, False, False, False, False, False, False, False, False, False, False, False]
 
-# Remembers which mode was active when keypad_divide put Talon to sleep,
-# so that the next keypad_divide press restores the same mode.
-mode_before_sleep = "command"
-# Remembers eye-tracking control state at sleep time, so wake can restore
-# it. Without this, gaze-driven mouse keeps moving in sleep mode.
-control_enabled_before_sleep = False
-
 #fires call down and call up only once
 # def on_interval():
 #     for key in range(num_of_numpad_keys):
@@ -244,25 +237,7 @@ class UserActions:
         pass
 
     def keypad_divide_down():
-        # Toggle Talon sleep/wake instead of just the microphone, so that sleep
-        # and mic-mute can't drift out of sync (which left gaze mode active
-        # while the mic was off).
-        global mode_before_sleep, control_enabled_before_sleep
-        modes = scope.get("mode")
-        if "sleep" in modes:
-            restore = mode_before_sleep if mode_before_sleep in ("command", "dictation") else "command"
-            actions.mode.disable("sleep")
-            actions.mode.enable(restore)
-            if control_enabled_before_sleep:
-                actions.tracking.control_toggle(True)
-        else:
-            mode_before_sleep = "dictation" if "dictation" in modes else "command"
-            control_enabled_before_sleep = actions.tracking.control_enabled()
-            actions.tracking.control_gaze_toggle(False)
-            actions.tracking.control_toggle(False)
-            actions.mode.disable("command")
-            actions.mode.disable("dictation")
-            actions.mode.enable("sleep")
+        actions.user.toggle_talon_sleep()
         #actions.user.toggle_talon_microphone()
 
     def keypad_divide_up():
