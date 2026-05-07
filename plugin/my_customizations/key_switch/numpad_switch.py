@@ -16,6 +16,10 @@ last_state = [False, False, False, False, False, False, False, False, False, Fal
 continuous_firing = [False, False, True, False, True, False, True, False, True, False, False, False, False, False]
 has_fired = [False, False, False, False, False, False, False, False, False, False, False, False, False, False]
 
+# Remembers which mode was active when keypad_divide put Talon to sleep,
+# so that the next keypad_divide press restores the same mode.
+mode_before_sleep = "command"
+
 #fires call down and call up only once
 # def on_interval():
 #     for key in range(num_of_numpad_keys):
@@ -240,11 +244,14 @@ class UserActions:
         # Toggle Talon sleep/wake instead of just the microphone, so that sleep
         # and mic-mute can't drift out of sync (which left gaze mode active
         # while the mic was off).
-        from talon import scope
-        if "sleep" in scope.get("mode"):
+        global mode_before_sleep
+        modes = scope.get("mode")
+        if "sleep" in modes:
+            restore = mode_before_sleep if mode_before_sleep in ("command", "dictation") else "command"
             actions.mode.disable("sleep")
-            actions.mode.enable("command")
+            actions.mode.enable(restore)
         else:
+            mode_before_sleep = "dictation" if "dictation" in modes else "command"
             actions.mode.disable("command")
             actions.mode.disable("dictation")
             actions.mode.enable("sleep")
