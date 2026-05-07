@@ -10,6 +10,7 @@ Requires the `comtypes` package — install via install_deps.bat.
 
 from __future__ import annotations
 
+import logging
 import os
 from ctypes import (
     POINTER,
@@ -24,6 +25,10 @@ from ctypes.wintypes import BOOL, DWORD, HANDLE, LPCWSTR
 import comtypes
 from comtypes import COMMETHOD, GUID, STDMETHOD
 from comtypes import IUnknown
+
+# comtypes logs every COM Release/CoInit/CoUninit at DEBUG, which floods
+# Talon's log on every poll tick. Suppress anything below WARNING.
+logging.getLogger("comtypes").setLevel(logging.WARNING)
 
 
 # --- constants ---
