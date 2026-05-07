@@ -62,9 +62,10 @@ def _tick():
     active = _dictation_active()
     if active and not _state["active"]:
         _state["active"] = True
-        # If Talon is already in sleep mode, leave speech alone. speech.disable()
-        # is a no-op in sleep mode anyway, but speech.enable() on resume would
-        # wake Talon out of sleep — which the user explicitly didn't ask for.
+        # If Talon is already in sleep mode, don't touch speech or the mouse.
+        # speech.enable() on resume would wake Talon, and mouse_wake() can
+        # re-enable control mouse (e.g. in gaze/hiss modes) even though sleep
+        # mode wants the mouse to stay disabled.
         was_sleeping = "sleep" in scope.get("mode")
         try:
             if was_sleeping or not actions.speech.enabled():
@@ -74,11 +75,12 @@ def _tick():
                 _state["disabled_by_us"] = True
         except Exception as e:
             print(f"[windows_dictation_detector] disable failed: {e}")
-        try:
-            actions.user.mouse_sleep()
-            _state["mouse_slept_by_us"] = True
-        except Exception as e:
-            print(f"[windows_dictation_detector] mouse_sleep failed: {e}")
+        if not was_sleeping:
+            try:
+                actions.user.mouse_sleep()
+                _state["mouse_slept_by_us"] = True
+            except Exception as e:
+                print(f"[windows_dictation_detector] mouse_sleep failed: {e}")
         app.notify("Talon paused: Windows Dictation active")
     elif not active and _state["active"]:
         _state["active"] = False
