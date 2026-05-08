@@ -7,6 +7,7 @@ sentence: CAPITALIZE_FIRST_WORD
 title: CAPITALIZE_ALL_WORDS
 
 #My additions
+#These formatters have been added directly into core/text/text.talon instead
 #capitalize: CAPITALIZE_ALL_WORDS
 #ship: CAPITALIZE_ALL_WORDS
 #sink: ALL_LOWERCASE
