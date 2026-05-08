@@ -172,6 +172,30 @@ ctx.lists["user.symbol_key"]  = symbol_key_dict
 ctx_dragon.lists["user.punctuation"] = dragon_punctuation_dict
 ```
 
+## Legacy `modifier_keys` dict
+
+```python
+ctx = Context()
+modifier_keys = {
+    # If you find 'alt' is often misrecognized, try using 'alter'.
+    #"alt": "alt",
+    "control": "ctrl",  #'troll':   'ctrl',
+    "shift": "shift",  #'sky':     'shift',
+    "super": "super",
+
+    #My additions
+    'alt key': 'alt',
+    'option': 'alt',
+    'option key': 'alt',
+    "control key": "ctrl",
+    "shift key": "shift",
+    #"win": "super", #win is often misrecognized as wheel
+    'win key': 'super',
+}
+```
+
+Replaced by [win/modifier_key.talon-list](win/modifier_key.talon-list) and [mac/modifier_key.talon-list](mac/modifier_key.talon-list). Personal additions (`alt key`, `option key`, `control key`, `shift key`, `win key`) and the commented-out `alt` / `win` entries with their reminder notes have been migrated back into both files.
+
 ## Legacy `simple_keys` / `alternate_keys` / `special_keys`
 
 ```python
