@@ -25,6 +25,3 @@ void: space
 blank: space
 slap: enter
 #chuck: backspace
-end key: end
-home key: home
-tab key: tab

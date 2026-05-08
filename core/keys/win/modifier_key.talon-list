@@ -3,20 +3,10 @@ os: windows
 os: linux
 -
 
-# If you find 'alt' is often misrecognized, try using 'alter'.
-#alt: alt
+alt: alt
 control: ctrl
 shift: shift
 # super is the windows key
 super: super
 command: ctrl
 option: alt
-
-#My additions
-alt key: alt
-option key: alt
-control key: ctrl
-shift key: shift
-#win is often misrecognized as wheel
-#win: super
-win key: super

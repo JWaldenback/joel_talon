@@ -2,8 +2,7 @@ list: user.modifier_key
 os: mac
 -
 
-# If you find 'alt' is often misrecognized, try using 'alter'.
-#alt: alt
+alt: alt
 control: ctrl
 shift: shift
 super: cmd
@@ -11,12 +10,3 @@ command: cmd
 option: alt
 function: fn
 globe: fn
-
-#My additions
-alt key: alt
-option key: alt
-control key: ctrl
-shift key: shift
-#win is often misrecognized as wheel
-#win: cmd
-win key: cmd
