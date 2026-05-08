@@ -38,4 +38,4 @@ quote: "' '"
 dub quote: '" "'
 grave: ` `
 #back tick: ` `
-percent: % %
+#percent: % %
