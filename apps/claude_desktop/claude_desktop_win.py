@@ -3,17 +3,16 @@ from talon import Context, Module, actions
 mod = Module()
 ctx = Context()
 
-# "Claude for Windows" desktop chat app (claude.ai client),
-# installed via the Microsoft Store under \WindowsApps\Claude_*.
-# Note: the Claude Code CLI wrapper at AppData\Roaming\Claude\claude-code\
-# is also named claude.exe, so we disambiguate by path.
+# "Claude for Windows" desktop chat app (claude.ai client).
+# Talon scope reports app.name="Claude" and app.exe="claude.exe" for this
+# Microsoft Store / UWP install. The Claude Code CLI wrapper is also
+# named claude.exe but reports a different app.name, so combining the
+# two keys uniquely identifies this app.
 apps = mod.apps
 apps.claude_desktop = r"""
 os: windows
+and app.name: Claude
 and app.exe: /^claude\.exe$/i
-and app.path: /WindowsApps[\\/]Claude_/i
-os: windows
-and win.title: /^Claude$/
 """
 
 ctx.matches = r"""
