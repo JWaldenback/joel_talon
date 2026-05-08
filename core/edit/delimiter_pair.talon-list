@@ -19,10 +19,10 @@ curly: { }
 #percentages: % %
 pad: space space
 
-escaped round: \( \)
-escaped box: \[ \]
-escaped quad: '\\" \\"'
-escaped twin: "\\' \\'"
+#escaped round: \( \)
+#escaped box: \[ \]
+#escaped quad: '\\" \\"'
+#escaped twin: "\\' \\'"
 
 # My customizations 
 paren: ( )
