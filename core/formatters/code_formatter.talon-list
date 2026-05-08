@@ -9,6 +9,7 @@ list: COMMA_SEPARATED
 dub string: DOUBLE_QUOTED_STRING
 #dunder: DOUBLE_UNDERSCORE
 #hammer: PUBLIC_CAMEL_CASE
+#changed from `hammer` to `pascal`
 pascal: PUBLIC_CAMEL_CASE
 kebab: DASH_SEPARATED
 #packed: DOUBLE_COLON_SEPARATED

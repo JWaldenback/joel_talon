@@ -17,9 +17,12 @@ insert: insert
 clear: backspace
 delete: delete
 #forward delete: delete
+
+#My additions
 void: space
 blank: space
 slap: enter
+#chuck: backspace
 end key: end
 home key: home
 tab key: tab

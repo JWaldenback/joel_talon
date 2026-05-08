@@ -19,9 +19,12 @@ delete: delete
 #forward delete: delete
 menu key: menu
 print screen: printscr
+
+#My additions
 void: space
 blank: space
 slap: enter
+#chuck: backspace
 end key: end
 home key: home
 tab key: tab

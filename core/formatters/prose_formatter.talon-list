@@ -5,3 +5,10 @@ list: user.prose_formatter
 speak: NOOP
 sentence: CAPITALIZE_FIRST_WORD
 title: CAPITALIZE_ALL_WORDS
+
+#My additions
+#capitalize: CAPITALIZE_ALL_WORDS
+#ship: CAPITALIZE_ALL_WORDS
+#sink: ALL_LOWERCASE
+#sunk: ALL_LOWERCASE
+#lowercase: ALL_LOWERCASE
