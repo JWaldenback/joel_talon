@@ -25,10 +25,10 @@ def gui_select(gui: imgui.GUI):
 
 modifier = ""
 
-# State for toggle_talon_sleep: remembers which mode was active and whether
-# eye-tracking control was on at sleep time, so wake can restore them.
+# State for toggle_talon_sleep: remembers which mode was active at sleep
+# time so wake can restore it. Eye-tracking state is owned by mouse_sleep /
+# mouse_wake, which are the single source of truth.
 _mode_before_sleep = "command"
-_control_enabled_before_sleep = False
 @imgui.open(x=700, y=0)
 def gui_hold_modifier(gui: imgui.GUI):
     gui.text(f"Modifier held:")
@@ -234,19 +234,16 @@ class UserActions:
         gui_select.hide()
 
     def toggle_talon_sleep():
-        global _mode_before_sleep, _control_enabled_before_sleep
+        global _mode_before_sleep
         modes = scope.get("mode")
         if "sleep" in modes:
             restore = _mode_before_sleep if _mode_before_sleep in ("command", "dictation") else "command"
             actions.mode.disable("sleep")
             actions.mode.enable(restore)
-            if _control_enabled_before_sleep:
-                actions.tracking.control_toggle(True)
+            actions.user.mouse_wake()
         else:
             _mode_before_sleep = "dictation" if "dictation" in modes else "command"
-            _control_enabled_before_sleep = actions.tracking.control_enabled()
-            actions.tracking.control_gaze_toggle(False)
-            actions.tracking.control_toggle(False)
+            actions.user.mouse_sleep()
             actions.mode.disable("command")
             actions.mode.disable("dictation")
             actions.mode.enable("sleep")

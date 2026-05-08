@@ -128,6 +128,11 @@ class Actions:
         actions.tracking.control_zoom_toggle(eye_tracking_state.control_zoom)
         actions.tracking.control_toggle(eye_tracking_state.control)
         actions.tracking.control1_toggle(eye_tracking_state.control1)
+        # Gaze/head are not query-able, so re-apply them from the user's
+        # eye_tracking mode setting (the source of truth for their default).
+        if eye_tracking == "gaze control":
+            actions.tracking.control_gaze_toggle(True)
+            actions.tracking.control_head_toggle(True)
 
         if settings.get("user.mouse_wake_hides_cursor"):
             actions.user.mouse_cursor_hide()
@@ -170,6 +175,10 @@ class Actions:
             actions.tracking.control_zoom_toggle(False)
             actions.tracking.control_toggle(False)
             actions.tracking.control1_toggle(False)
+            # Gaze/head can't be queried, but we always want them off while
+            # asleep so the cursor doesn't follow eye/head movement.
+            actions.tracking.control_gaze_toggle(False)
+            actions.tracking.control_head_toggle(False)
 
             actions.user.mouse_cursor_show()
             actions.user.mouse_scroll_stop()
