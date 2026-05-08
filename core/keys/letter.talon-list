@@ -1,5 +1,9 @@
 list: user.letter
 -
+
+# for common alternative spoken forms for letters, visit
+# https://talon.wiki/Resource%20Hub/Speech%20Recognition/improving_recognition_accuracy#collected-alternatives-to-the-default-alphabet
+
 air: a
 any: a
 bat: b
@@ -33,3 +37,26 @@ zip: z
 onyx: å
 elk: ä
 eagle: ö
+
+#http://www.yougowords.com/start-with-e/1-syllables
+#https://syllablewords.net/1-syllable-words-starting-with-o?page=1
+#near <- why didn't near work?
+#eel elk eagle
+#onyx adder oesten
+#spun
+#urge is often misrecognized as args
+#red is a color so better to use ram
+#pink is a color so better to use perk
+#each is often misrecognized as ice
+#bat is often misrecognized as whale/dot/it/space and many more commands... Trying out `batch` and `bill` instead
+#east is a little cumbersome to say, tryin `eat` instead
+#batch -> bin
+#urn -> urge (will remove the voice command `args`)
+#urge -> earn (so one can say `ship earn` and get `U` and not `Earn`)
+#eagle -> urge (as it resembles the sound of the letter better)
+#bin is often misrecognized as bang (!)
+#sun -> sit (sun is often misrecognized as one, home, end and words like it)
+#ice -> ivy (ice is misinterpreted as space)
+#eat -> each (now that we're using "ivy" instead of "ice" we can switch back to using "each" instead of "eat". The problem with "eat" is that it too closely resembles "it")
+#odd -> orange/oak because odd is often misrecognized as one/word the/...
+#urge -> urging -> eagle for the letter `ö`
