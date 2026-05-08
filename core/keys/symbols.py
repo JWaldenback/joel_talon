@@ -94,9 +94,9 @@ symbols = [
     Symbol("^", None, ["caret"]),
     Symbol("|", None, ["pipe"]),
     # Removed: quote, apostrophe
-    Symbol("'", None, []),
-    # Removed: dub quote
-    Symbol('"', None, ["double quote"]),
+    Symbol("'", None, ["left quote", "right quote", "left apostrophe", "right apostrophe"]),
+    # Removed: dub quote, double quote
+    Symbol('"', None, ["left dub quote", "right dub quote"]),
 ]
 
 
