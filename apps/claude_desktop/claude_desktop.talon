@@ -17,16 +17,12 @@ stop it: key(esc)
 
 # Slash commands
 # Full reference: https://code.claude.com/docs/en/commands
-# Note: a free-form `slash <text>` rule doesn't work reliably (dictation
-# eats the word "slash"), so each command gets its own explicit rule.
-
-# User-requested
+slash help: insert("/help")          # list every available command
+slash by the way: insert("/btw")
+slash remote control: insert("/remote-control")
 slash clear: insert("/clear")        # start a new conversation, empty context
 slash init: insert("/init")          # initialize CLAUDE.md for the project
 slash mcp: insert("/mcp")            # manage MCP servers and OAuth
-
-# Commonly useful
-slash help: insert("/help")          # list every available command
 slash compact: insert("/compact")    # free up context by summarizing the conversation
 slash model: insert("/model")        # switch model / adjust effort
 slash config: insert("/config")      # open settings (theme, output style, etc.)
@@ -39,9 +35,6 @@ slash context: insert("/context")    # visualize current context usage
 slash agents: insert("/agents")      # manage subagent configurations
 slash memory: insert("/memory")      # edit CLAUDE.md memory files
 slash diff: insert("/diff")          # open the interactive diff viewer
-
-# Quick side-question (no /-prefix dictation needed)
-by the way: insert("/btw")
 
 # App
 open settings: key(ctrl-comma)
