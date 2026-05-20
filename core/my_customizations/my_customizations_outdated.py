@@ -1,11 +1,12 @@
 # Outdated dictation/mic actions kept here for reference.
 #
-# The Windows Dictation watcher in plugin/windows_dictation_detector/ now
-# auto-pauses Talon's speech engine and tracking whenever Win+H voice typing
-# is active and resumes when the dictation pill closes, so the manual
-# "toggle mic + put Talon to sleep before dictation, wake it up after" flow
-# below is no longer needed. The actions are still registered (in the same
-# user.* namespace) so existing call sites keep working.
+# The mic capture watcher in plugin/mic_capture_watcher/ now auto-pauses
+# Talon's speech engine and tracking whenever a known capture service
+# (Win+H, Super Whisper, ...) is listening, and resumes when it stops, so
+# the manual "toggle mic + put Talon to sleep before dictation, wake it
+# up after" flow below is no longer needed. The actions are still
+# registered (in the same user.* namespace) so existing call sites keep
+# working.
 
 from talon import Module, Context, actions, app, scope
 

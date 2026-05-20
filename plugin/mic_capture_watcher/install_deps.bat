@@ -1,5 +1,5 @@
 @echo off
-REM Installs the Python dependencies needed by the windows_dictation_detector
+REM Installs the Python dependencies needed by the mic_capture_watcher
 REM plugin into Talon's bundled Python.
 REM
 REM Run this once after cloning. Re-run if the dependency list changes.

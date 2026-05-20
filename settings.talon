@@ -142,6 +142,8 @@ settings():
 # My customizations
 # ----------------------------------------------------------------------------
 settings():
-    # If `true`, watch for Windows voice typing (Win+H) and auto-pause Talon
-    # speech + mouse while it's listening. Set to 0 to disable.
-    user.windows_dictation_watch_enabled = 1
+    # If `true`, watch the microphone for known capture services (Windows
+    # voice typing, Super Whisper, ...) and auto-pause Talon speech + mouse
+    # while any of them is listening. Set to 0 to disable. Add new services
+    # in plugin/mic_capture_watcher/mic_capture_watcher.py.
+    user.mic_capture_watch_enabled = 1

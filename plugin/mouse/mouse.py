@@ -81,7 +81,7 @@ eye_tracking_state: EyeTrackingState
 
 # mouse_sleep / mouse_wake are re-entrant: only the outermost sleep takes a
 # snapshot, only the outermost wake restores it. This prevents overlapping
-# callers (e.g. windows_dictation_detector + a voice command) from clobbering
+# callers (e.g. mic_capture_watcher + a voice command) from clobbering
 # each other's saved state.
 _sleep_depth = 0
 

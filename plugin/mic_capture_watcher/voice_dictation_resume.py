@@ -12,9 +12,9 @@ Flow:
      wake the mouse. Talon's own injected keystrokes are filtered via
      LLKHF_INJECTED so they never trip the hook.
   3. The flag is cleared automatically on resume, on "stop listening",
-     and whenever the windows_dictation_detector observes the pill
-     closing — so paths that didn't go through "start listening"
-     (e.g. talon sleep then manual Win+H) are unaffected.
+     and whenever the mic_capture_watcher observes the pill closing —
+     so paths that didn't go through "start listening" (e.g. talon
+     sleep then manual Win+H) are unaffected.
 """
 
 import ctypes
@@ -82,16 +82,16 @@ def _resume_on_main():
         if not _state["armed"]:
             return
         _state["armed"] = False
-    # Hand the resume off to windows_dictation_detector. Marking
-    # disabled_by_us=True ensures it will speech.enable() the next time it
-    # observes the pill close — whether that close came from the user's
-    # keystroke (most common on Win11) or from our delayed super-h below.
+    # Hand the resume off to mic_capture_watcher. mark_disabled_by_us
+    # ensures it will speech.enable() the next time it observes the pill
+    # close — whether that close came from the user's keystroke (most
+    # common on Win11) or from our delayed super-h below.
     # Avoid sending super-h immediately: the audio-session check can still
     # report active when the keystroke is already closing the pill, and
     # toggling super-h then would reopen it and silence Talon again.
     try:
-        from . import windows_dictation_detector as _wdd
-        _wdd._state["disabled_by_us"] = True
+        from . import mic_capture_watcher as _mcw
+        _mcw.mark_disabled_by_us("win_h_dictation")
     except Exception as e:
         print(f"[voice_dictation_resume] mark disabled_by_us failed: {e}")
     try:
@@ -103,8 +103,8 @@ def _resume_on_main():
 
 def _close_pill_if_still_active():
     try:
-        from . import windows_dictation_detector as _wdd
-        if _wdd._dictation_active():
+        from . import mic_capture_watcher as _mcw
+        if _mcw.is_service_active("win_h_dictation"):
             actions.key("super-h")
     except Exception as e:
         print(f"[voice_dictation_resume] late super-h failed: {e}")
