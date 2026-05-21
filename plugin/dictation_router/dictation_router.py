@@ -1,7 +1,7 @@
 """
 Language-aware dictation router (Windows only, standalone).
 
-Bound to a key in win_h_language_router.talon. When triggered:
+Bound to a key in dictation_router.talon. When triggered:
   - If the foreground window's keyboard layout is REROUTE_LANGID
     (English by default), send REROUTE_KEY so a different dictation
     tool can be started.
@@ -13,7 +13,7 @@ remove the feature, delete this folder entirely (both files), or just
 delete/rename the .talon file to unbind the trigger key.
 
 To change behavior, edit only the CONFIG block below. To change the
-trigger key, edit win_h_language_router.talon.
+trigger key, edit dictation_router.talon.
 """
 
 # ============================== CONFIG ===============================
@@ -56,7 +56,7 @@ if _user32 is not None:
 
 def _log(msg: str):
     if DEBUG:
-        print(f"[win_h_language_router] {msg}")
+        print(f"[dictation_router] {msg}")
 
 
 def _foreground_langid() -> int:
@@ -72,7 +72,7 @@ def _foreground_langid() -> int:
 
 @mod.action_class
 class Actions:
-    def lang_router_dictate():
+    def route_dictation():
         """Send REROUTE_KEY if foreground layout matches REROUTE_LANGID, otherwise DEFAULT_KEY."""
         lang_id = _foreground_langid()
         if lang_id == REROUTE_LANGID:
