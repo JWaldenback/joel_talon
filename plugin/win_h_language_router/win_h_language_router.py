@@ -29,7 +29,7 @@ PASSTHROUGH_LANGID = 0x041D
 WIN_LANG_KEY = "super-h"
 
 # Key sent when the foreground layout does NOT match PASSTHROUGH_LANGID.
-REROUTE_KEY = "ctrl-space"
+REROUTE_KEY = "ctrl-shift-j"
 
 # Verbose console logging for debugging. Safe to leave on.
 DEBUG = True
