@@ -2,11 +2,11 @@
 Language-aware dictation router (Windows only, standalone).
 
 Bound to a key in win_h_language_router.talon. When triggered:
-  - If the foreground window's keyboard layout is PASSTHROUGH_LANGID
-    (Swedish by default), send WIN_LANG_KEY (Win+H) so Windows opens
-    its native dictation pill.
-  - Otherwise, send REROUTE_KEY (Ctrl+Space by default) to start a
-    different dictation tool.
+  - If the foreground window's keyboard layout is REROUTE_LANGID
+    (English by default), send REROUTE_KEY so a different dictation
+    tool can be started.
+  - For ALL other layouts (Swedish, German, etc.), send DEFAULT_KEY
+    (Win+H by default) so Windows opens its native dictation pill.
 
 This module is self-contained: no imports from other user modules. To
 remove the feature, delete this folder entirely (both files), or just
@@ -17,19 +17,19 @@ trigger key, edit win_h_language_router.talon.
 """
 
 # ============================== CONFIG ===============================
-# When the foreground window's keyboard layout matches this LANGID,
-# WIN_LANG_KEY is sent. Otherwise REROUTE_KEY is sent.
-#   0x041D = Swedish (sv-SE)
+# ONLY when the foreground window's keyboard layout matches this LANGID
+# is REROUTE_KEY sent. Every other layout sends DEFAULT_KEY.
 #   0x0409 = English (US)
+#   0x041D = Swedish (sv-SE)
 # Full list: https://learn.microsoft.com/openspecs/windows_protocols/ms-lcid/a9eac961-e77d-41a6-90a5-ce1a8b0cdb9c
-PASSTHROUGH_LANGID = 0x041D
+REROUTE_LANGID = 0x0409
 
-# Key sent when the foreground layout matches PASSTHROUGH_LANGID.
-# "super-h" opens Windows' native dictation pill.
-WIN_LANG_KEY = "super-h"
-
-# Key sent when the foreground layout does NOT match PASSTHROUGH_LANGID.
+# Key sent ONLY when the foreground layout matches REROUTE_LANGID.
 REROUTE_KEY = "ctrl-shift-h"
+
+# Key sent for all other layouts.
+# "super-h" opens Windows' native dictation pill.
+DEFAULT_KEY = "super-h"
 
 # Verbose console logging for debugging. Safe to leave on.
 DEBUG = True
@@ -73,11 +73,11 @@ def _foreground_langid() -> int:
 @mod.action_class
 class Actions:
     def lang_router_dictate():
-        """Send WIN_LANG_KEY or REROUTE_KEY depending on foreground keyboard layout."""
+        """Send REROUTE_KEY if foreground layout matches REROUTE_LANGID, otherwise DEFAULT_KEY."""
         lang_id = _foreground_langid()
-        if lang_id == PASSTHROUGH_LANGID:
-            _log(f"LANGID=0x{lang_id:04X} matches passthrough; sending {WIN_LANG_KEY!r}")
-            actions.key(WIN_LANG_KEY)
-        else:
-            _log(f"LANGID=0x{lang_id:04X} does not match passthrough; sending {REROUTE_KEY!r}")
+        if lang_id == REROUTE_LANGID:
+            _log(f"LANGID=0x{lang_id:04X} matches reroute; sending {REROUTE_KEY!r}")
             actions.key(REROUTE_KEY)
+        else:
+            _log(f"LANGID=0x{lang_id:04X} does not match reroute; sending {DEFAULT_KEY!r}")
+            actions.key(DEFAULT_KEY)
