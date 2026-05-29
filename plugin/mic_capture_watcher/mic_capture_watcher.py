@@ -270,6 +270,30 @@ class Actions:
         app.notify(f"Active capture services: {msg}")
         print(f"[mic_capture_watcher] active={active}")
 
+    def mic_capture_reset():
+        """Force-restore Talon speech + mouse and clear all watcher flags.
+
+        Manual recovery if the watcher ever ends up stuck — e.g. an earlier
+        speech.enable() raised, leaving the *_by_us flag in a bad state.
+        The self-heal in _tick should normally make this unnecessary, but
+        this gives you a one-shot reset without restarting Talon.
+        """
+        try:
+            if not actions.speech.enabled():
+                actions.speech.enable()
+        except Exception as e:
+            print(f"[mic_capture_watcher] reset: enable failed: {e}")
+        try:
+            actions.user.mouse_wake()
+        except Exception as e:
+            print(f"[mic_capture_watcher] reset: mouse_wake failed: {e}")
+        _global["speech_disabled_by_us"] = False
+        _global["mouse_slept_by_us"] = False
+        for st in _service_state.values():
+            st["active"] = False
+            st["disabled_by_us"] = False
+        app.notify("Mic capture watcher: reset")
+
     def mic_capture_dump_sessions():
         """Print every audio capture session (pid, process, state) to the log.
 
