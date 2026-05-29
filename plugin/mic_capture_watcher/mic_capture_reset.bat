@@ -1,28 +1,27 @@
 @echo off
-REM Triggers Talon's user.mic_capture_reset() action.
+REM Sends user.mic_capture_reset() to the running Talon via its REPL.
 REM
-REM Use this if mic_capture_watcher leaves Talon's speech engine stuck
-REM disabled and voice commands aren't responding. Double-click this
-REM file and Talon should re-enable speech within ~1 second.
-REM
-REM How it works: this script creates a trigger file in %TEMP%.
-REM mic_capture_reset_trigger.py polls every 1 second and runs the
-REM reset action when it sees the trigger, then deletes the file.
+REM Executes immediately — no polling, no trigger files. talon_console.exe
+REM connects to Talon over a per-user named pipe (\\.\pipe\talon_repl),
+REM so this works without admin elevation provided Talon was started by
+REM the same Windows user.
 
-set "TRIGGER=%TEMP%\mic_capture_reset.trigger"
-type nul > "%TRIGGER%"
+set "TALON_CONSOLE=C:\Program Files\Talon\talon_console.exe"
 
-echo Trigger created at %TRIGGER%.
-echo Waiting for Talon to pick it up...
-timeout /t 3 /nobreak >nul
-
-if exist "%TRIGGER%" (
-    echo.
-    echo WARNING: Trigger file is still present after 3 seconds.
-    echo Is Talon running and the mic_capture_watcher plugin loaded?
-    echo You can manually delete the trigger file if needed.
+if not exist "%TALON_CONSOLE%" (
+    echo ERROR: talon_console.exe not found at "%TALON_CONSOLE%".
+    echo Edit mic_capture_reset.bat and update TALON_CONSOLE if your
+    echo Talon install lives somewhere else.
     pause
-) else (
-    echo Done. Talon speech and mouse have been reset.
-    timeout /t 2 /nobreak >nul
+    exit /b 1
 )
+
+echo actions.user.mic_capture_reset() | "%TALON_CONSOLE%" >nul
+if errorlevel 1 (
+    echo.
+    echo Failed to reach Talon. Is it running?
+    pause
+    exit /b 1
+)
+echo Done.
+timeout /t 1 /nobreak >nul
