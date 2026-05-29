@@ -12,4 +12,3 @@ os: windows
 # mic watch stop: user.mic_capture_stop_watch()
 # mic check now: user.mic_capture_check_now()
 # mic dump sessions: user.mic_capture_dump_sessions()
-# mic reset: user.mic_capture_reset()

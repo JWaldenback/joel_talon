@@ -2,7 +2,20 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from talon import Context, Module, actions, app, ctrl, imgui, settings, ui
-from talon.plugins.eye_mouse_2 import set_eye_mask
+
+# Guarded import: talon.plugins.eye_mouse_2 transitively imports eye_mouse,
+# which calls into the Tobii driver at import time and raises EyeClosedErr
+# when the tracker is disconnected. Catching that here means a missing /
+# hung tracker stops eye-mask features from working — but does NOT bring
+# down the entire mouse plugin (and the chain of modules that depend on
+# user.mouse_sleep / user.mouse_wake).
+try:
+    from talon.plugins.eye_mouse_2 import set_eye_mask
+except Exception as _eye_import_err:
+    print(f"[mouse] eye_mouse_2 import failed ({_eye_import_err}); set_eye_mask disabled")
+
+    def set_eye_mask(*_args, **_kwargs):
+        pass
 
 mod = Module()
 ctx = Context()

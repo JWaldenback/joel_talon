@@ -1,5 +1,4 @@
 from talon import Module, Context, actions, imgui, scope
-from talon_plugins import eye_mouse
 
 #Below is for the navigation_text()
 import re
@@ -8,12 +7,6 @@ import re
 from talon import ui, app
 import os
 
-#import mouse.py file so I can reach the variable `eye_tracking`
-from ...plugin.mouse.mouse import get_eye_tracking_variable
-#from ...plugin.mouse.mouse import eye_tracking
-#from plugin.mouse.mouse import eye_tracking
-#from plugin.mouse.mouse import *
-#from plugin.mouse import mouse
 
 
 @imgui.open(x=700, y=0)
@@ -25,10 +18,11 @@ def gui_select(gui: imgui.GUI):
 
 modifier = ""
 
-# State for toggle_talon_sleep: remembers which mode was active at sleep
-# time so wake can restore it. Eye-tracking state is owned by mouse_sleep /
-# mouse_wake, which are the single source of truth.
-_mode_before_sleep = "command"
+# State for toggle_talon_sleep: the mic name active at pause time, so we
+# can restore it on resume. We pause via the input device (set_microphone
+# "None") because speech.disable/enable can leave Talon's cubeb stream in
+# a stale state — same reasoning as mic_capture_watcher.
+_mic_before_sleep = None
 @imgui.open(x=700, y=0)
 def gui_hold_modifier(gui: imgui.GUI):
     gui.text(f"Modifier held:")
@@ -85,10 +79,10 @@ class Actions:
         """sdf"""
 
     def toggle_talon_sleep():
-        """Toggle Talon between sleep mode and the previously active mode
-        (command/dictation), also disabling eye-tracking control on sleep
-        and restoring it on wake. Avoids the half-awake state where mic-mute
-        and sleep drift out of sync."""
+        """Pause Talon by muting the mic (set_microphone "None") and sleeping
+        the mouse, or resume by restoring both. Does NOT change Talon's mode
+        — same primitive the mic_capture_watcher uses, so external dictation
+        and the keypad-divide pause stay symmetric."""
 
 ctx=Context()
 
@@ -234,16 +228,17 @@ class UserActions:
         gui_select.hide()
 
     def toggle_talon_sleep():
-        global _mode_before_sleep
-        modes = scope.get("mode")
-        if "sleep" in modes:
-            restore = _mode_before_sleep if _mode_before_sleep in ("command", "dictation") else "command"
-            actions.mode.disable("sleep")
-            actions.mode.enable(restore)
+        global _mic_before_sleep
+        if _mic_before_sleep:
+            # Paused → wake: restore the previously-active mic and mouse.
+            actions.speech.set_microphone(_mic_before_sleep)
+            _mic_before_sleep = None
             actions.user.mouse_wake()
         else:
-            _mode_before_sleep = "dictation" if "dictation" in modes else "command"
+            # Awake → pause: same primitive the mic_capture_watcher uses
+            # (set_microphone "None" + mouse_sleep), no mode change.
+            current_mic = actions.sound.active_microphone()
+            if current_mic and current_mic != "None":
+                _mic_before_sleep = current_mic
+                actions.speech.set_microphone("None")
             actions.user.mouse_sleep()
-            actions.mode.disable("command")
-            actions.mode.disable("dictation")
-            actions.mode.enable("sleep")
