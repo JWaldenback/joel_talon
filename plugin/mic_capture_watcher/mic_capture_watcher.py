@@ -131,6 +131,13 @@ def _activate(name: str):
 
 
 def _deactivate(name: str):
+    """Mark a service as no longer active and run its on_deactivate hook.
+
+    Global restore (speech.enable / mouse_wake) is intentionally NOT done
+    here — it runs from _restore_global_if_idle on every subsequent tick,
+    so a transient enable() / mouse_wake() failure is retried automatically
+    instead of leaving the watcher stuck.
+    """
     service = _service_by_name(name)
     _service_state[name]["active"] = False
     _service_state[name]["disabled_by_us"] = False
@@ -141,23 +148,35 @@ def _deactivate(name: str):
                 hook()
             except Exception as e:
                 print(f"[mic_capture_watcher] {name} on_deactivate failed: {e}")
-    # If any other service is still active, leave the global pause in place.
+        # Only announce "Talon resumed" on the last-active → fully-idle transition.
+        if not _any_service_active():
+            app.notify(f"Talon resumed: {service['display']} closed")
+
+
+def _restore_global_if_idle():
+    """If no service is currently active, restore Talon speech + mouse.
+
+    Idempotent and self-healing: the *_by_us flag is cleared ONLY after
+    the underlying action actually succeeds, so a transient failure (e.g.
+    the w2l engine momentarily refusing speech.enable()) is retried on
+    the next 300ms tick instead of being silently swallowed and leaving
+    Talon stuck with speech disabled.
+    """
     if _any_service_active():
         return
     if _global["speech_disabled_by_us"]:
         try:
-            actions.speech.enable()
+            if not actions.speech.enabled():
+                actions.speech.enable()
+            _global["speech_disabled_by_us"] = False
         except Exception as e:
-            print(f"[mic_capture_watcher] enable failed: {e}")
-        _global["speech_disabled_by_us"] = False
+            print(f"[mic_capture_watcher] enable failed (will retry): {e}")
     if _global["mouse_slept_by_us"]:
         try:
             actions.user.mouse_wake()
+            _global["mouse_slept_by_us"] = False
         except Exception as e:
-            print(f"[mic_capture_watcher] mouse_wake failed: {e}")
-        _global["mouse_slept_by_us"] = False
-    if service is not None:
-        app.notify(f"Talon resumed: {service['display']} closed")
+            print(f"[mic_capture_watcher] mouse_wake failed (will retry): {e}")
 
 
 def _tick():
@@ -170,6 +189,8 @@ def _tick():
             _activate(name)
         elif not is_active and was_active:
             _deactivate(name)
+    # Runs every tick so a previously-failed enable() is retried until it sticks.
+    _restore_global_if_idle()
 
 
 def _start_polling():
