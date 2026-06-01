@@ -42,21 +42,21 @@ key(scroll_lock): user.toggle_talon_microphone()
 profile switcher open: user.open_browser_profile_switcher("Google Chrome")
 
 talon hood (relaunch | restart):
-    mimic("head up show")
-    sleep(300ms)
-    mimic("event log show")
-    sleep(300ms)
-    mimic("status bar show")
-    sleep(300ms)
-    #Reset the status bar icons by first removing them
-    mimic("status bar remove microphone")
-    sleep(300ms)
-    mimic("status bar remove mode indicator")
-    sleep(300ms)
-    #And then add them again
-    mimic("status bar add microphone")
-    sleep(300ms)
-    mimic("status bar add mode indicator")
+    # Call HUD actions directly instead of mimicking voice commands. The
+    # mimic approach depended on the status-bar context-menu button text
+    # currently in scope ("Add microphone" vs "Remove microphone"), so a
+    # mimic could silently no-op if the icon was already in that state.
+    user.hud_enable()
+    user.hud_enable_id("event_log")
+    user.hud_enable_id("status_bar")
+    # Reset the status bar icons by first removing them...
+    user.hud_remove_single_click_mic_toggle()
+    user.hud_deactivate_poller("mode_toggle")
+    user.hud_remove_status_icon("mode_toggle")
+    sleep(100ms)
+    # ...and then adding them again.
+    user.hud_add_single_click_mic_toggle()
+    user.hud_activate_poller("mode_toggle")
 
 program close: user.close_program()
 
