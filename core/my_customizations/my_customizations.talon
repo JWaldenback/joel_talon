@@ -42,19 +42,13 @@ key(scroll_lock): user.toggle_talon_microphone()
 profile switcher open: user.open_browser_profile_switcher("Google Chrome")
 
 talon hood (relaunch | restart):
-    # Call HUD actions directly instead of mimicking voice commands. The
-    # mimic approach depended on the status-bar context-menu button text
-    # currently in scope ("Add microphone" vs "Remove microphone"), so a
-    # mimic could silently no-op if the icon was already in that state.
+    # Ensure the HUD and its widgets are visible and the mic + mode icons
+    # are on the status bar. Idempotent — no remove-first step, so it
+    # works when an icon is already missing (the previous remove-then-add
+    # version silently failed in that case).
     user.hud_enable()
     user.hud_enable_id("event_log")
     user.hud_enable_id("status_bar")
-    # Reset the status bar icons by first removing them...
-    user.hud_remove_single_click_mic_toggle()
-    user.hud_deactivate_poller("mode_toggle")
-    user.hud_remove_status_icon("mode_toggle")
-    sleep(100ms)
-    # ...and then adding them again.
     user.hud_add_single_click_mic_toggle()
     user.hud_activate_poller("mode_toggle")
 
