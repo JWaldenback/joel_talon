@@ -231,14 +231,25 @@ class UserActions:
         global _mic_before_sleep
         if _mic_before_sleep:
             # Paused → wake: restore the previously-active mic and mouse.
+            restored = _mic_before_sleep
             actions.speech.set_microphone(_mic_before_sleep)
             _mic_before_sleep = None
             actions.user.mouse_wake()
+            actions.user.mic_state_log(
+                "toggle_talon_sleep_resume",
+                {"source": "toggle_talon_sleep", "restored_mic": restored},
+            )
         else:
             # Awake → pause: same primitive the mic_capture_watcher uses
             # (set_microphone "None" + mouse_sleep), no mode change.
             current_mic = actions.sound.active_microphone()
+            saved = None
             if current_mic and current_mic != "None":
                 _mic_before_sleep = current_mic
+                saved = current_mic
                 actions.speech.set_microphone("None")
             actions.user.mouse_sleep()
+            actions.user.mic_state_log(
+                "toggle_talon_sleep_pause",
+                {"source": "toggle_talon_sleep", "saved_mic": saved, "current_mic": current_mic},
+            )

@@ -11,6 +11,8 @@ required keys are `name`, `display`, and `processes` (lowercase exe names).
 
 from talon import Module, actions, app, cron, scope, settings
 
+from .mic_state_log import log as _state_log
+
 mod = Module()
 
 
@@ -92,6 +94,14 @@ _global = {
     "previous_microphone": None,
     "mouse_slept_by_us": False,
     "cron": None,
+    # Last mic name seen by the polling tick — used to log changes whose
+    # cause isn't this module (HUD click, voice command, etc.).
+    "last_polled_mic": None,
+    # Last (control, control_zoom, control1) eye-tracker tuple seen by the
+    # polling tick. Logged when it changes so out-of-sync states (tracker
+    # left on while watcher thinks Talon is paused, or vice versa) are
+    # captured even when the change came from outside mouse_sleep/wake.
+    "last_polled_tracking": None,
 }
 
 
@@ -113,13 +123,15 @@ def _activate(name: str):
     # If Talon is already sleeping, don't touch speech or the mouse —
     # speech.enable() on resume would wake Talon, and stacking a sleep
     # would entangle our restore with the user's "talon wake".
+    was_sleeping = "sleep" in scope.get("mode") if not was_any_active else None
+    saved_mic = None
     if not was_any_active:
-        was_sleeping = "sleep" in scope.get("mode")
         try:
             if not was_sleeping:
                 current_mic = actions.sound.active_microphone()
                 if current_mic and current_mic != "None":
                     _global["previous_microphone"] = current_mic
+                    saved_mic = current_mic
                     actions.speech.set_microphone("None")
                     _global["speech_disabled_by_us"] = True
                     _service_state[name]["disabled_by_us"] = True
@@ -131,6 +143,14 @@ def _activate(name: str):
                 _global["mouse_slept_by_us"] = True
             except Exception as e:
                 print(f"[mic_capture_watcher] mouse_sleep failed: {e}")
+    _state_log(
+        "dictation_detected",
+        source="mic_capture_watcher",
+        service=name,
+        first_active=not was_any_active,
+        was_sleeping=was_sleeping,
+        saved_mic=saved_mic,
+    )
     app.notify(f"Talon paused: {service['display']} active")
 
 
@@ -147,7 +167,15 @@ def _deactivate(name: str):
                 print(f"[mic_capture_watcher] {name} on_deactivate failed: {e}")
     # If any other service is still active, leave the global pause in place.
     if _any_service_active():
+        _state_log(
+            "dictation_cleared",
+            source="mic_capture_watcher",
+            service=name,
+            still_active=[n for n, st in _service_state.items() if st["active"]],
+            restored=False,
+        )
         return
+    restored_mic = _global["previous_microphone"] if _global["speech_disabled_by_us"] else None
     if _global["speech_disabled_by_us"]:
         try:
             if _global["previous_microphone"]:
@@ -156,12 +184,22 @@ def _deactivate(name: str):
             print(f"[mic_capture_watcher] enable failed: {e}")
         _global["speech_disabled_by_us"] = False
         _global["previous_microphone"] = None
+    woke_mouse = _global["mouse_slept_by_us"]
     if _global["mouse_slept_by_us"]:
         try:
             actions.user.mouse_wake()
         except Exception as e:
             print(f"[mic_capture_watcher] mouse_wake failed: {e}")
         _global["mouse_slept_by_us"] = False
+    _state_log(
+        "dictation_cleared",
+        source="mic_capture_watcher",
+        service=name,
+        still_active=[],
+        restored=True,
+        restored_mic=restored_mic,
+        woke_mouse=woke_mouse,
+    )
     if service is not None:
         app.notify(f"Talon resumed: {service['display']} closed")
 
@@ -176,6 +214,56 @@ def _tick():
             _activate(name)
         elif not is_active and was_active:
             _deactivate(name)
+    # Log every mic-name change we observe, regardless of cause. Any change
+    # that isn't paired with a same-tick source-specific entry above (or a
+    # toggle_talon_sleep_* line) came from outside this module — HUD mic
+    # click, voice command, OS, etc.
+    try:
+        current_mic = actions.sound.active_microphone()
+    except Exception:
+        current_mic = None
+    last = _global["last_polled_mic"]
+    if current_mic != last:
+        _global["last_polled_mic"] = current_mic
+        # Skip the very first tick after load so we don't log the initial
+        # observation as if it were a change.
+        if last is not None or current_mic not in (None, "None"):
+            _state_log(
+                "mic_changed",
+                source="mic_poll",
+                old=last,
+                new=current_mic,
+                watcher_active=[n for n, st in _service_state.items() if st["active"]],
+                speech_disabled_by_watcher=_global["speech_disabled_by_us"],
+            )
+    # Same idea for the eye tracker: capture every flip in the queryable
+    # tracking-state tuple so we can correlate "dictation started but
+    # tracker stayed on" against the events around it. control_gaze /
+    # control_head are not queryable, so this triple is the best we get.
+    try:
+        tracking = (
+            actions.tracking.control_enabled(),
+            actions.tracking.control_zoom_enabled(),
+            actions.tracking.control1_enabled(),
+        )
+    except Exception:
+        tracking = None
+    last_tracking = _global["last_polled_tracking"]
+    if tracking is not None and tracking != last_tracking:
+        _global["last_polled_tracking"] = tracking
+        if last_tracking is not None:
+            _state_log(
+                "tracking_changed",
+                source="tracking_poll",
+                old_control=last_tracking[0],
+                old_zoom=last_tracking[1],
+                old_control1=last_tracking[2],
+                new_control=tracking[0],
+                new_zoom=tracking[1],
+                new_control1=tracking[2],
+                watcher_active=[n for n, st in _service_state.items() if st["active"]],
+                mouse_slept_by_watcher=_global["mouse_slept_by_us"],
+            )
 
 
 def _start_polling():

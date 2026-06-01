@@ -99,6 +99,16 @@ eye_tracking_state: EyeTrackingState
 _sleep_depth = 0
 
 
+def _log_tracker_event(event: str, **fields):
+    """Best-effort: append a tracker state-change line to mic_state.log so
+    eye-tracker sync bugs (depth drift, missed wake, etc.) can be diagnosed
+    after the fact. Never propagate failures into the sleep/wake path."""
+    try:
+        actions.user.mic_state_log(event, {"source": "mouse_sleep_wake", **fields})
+    except Exception:
+        pass
+
+
 def on_ready():
     global eye_tracking_state
     eye_tracking_state = EyeTrackingState(
@@ -133,8 +143,15 @@ class Actions:
     def mouse_wake():
         """Re-enable eye tracking state and disables cursor"""
         global _sleep_depth
+        depth_before = _sleep_depth
         if _sleep_depth > 1:
             _sleep_depth -= 1
+            _log_tracker_event(
+                "mouse_wake",
+                outermost=False,
+                depth_before=depth_before,
+                depth_after=_sleep_depth,
+            )
             return
         _sleep_depth = 0
         # Restore the exact snapshot taken at the outermost mouse_sleep.
@@ -149,6 +166,17 @@ class Actions:
 
         if settings.get("user.mouse_wake_hides_cursor"):
             actions.user.mouse_cursor_hide()
+
+        _log_tracker_event(
+            "mouse_wake",
+            outermost=True,
+            depth_before=depth_before,
+            depth_after=_sleep_depth,
+            restored_control=eye_tracking_state.control,
+            restored_control_zoom=eye_tracking_state.control_zoom,
+            restored_control1=eye_tracking_state.control1,
+            eye_tracking_mode=eye_tracking,
+        )
 
     def mouse_drag(button: int):
         """Press and hold/release a specific mouse button for dragging"""
@@ -179,7 +207,9 @@ class Actions:
     def mouse_sleep():
         """Disables control mouse, zoom mouse, and re-enables cursor"""
         global _sleep_depth, eye_tracking_state
-        if _sleep_depth == 0:
+        depth_before = _sleep_depth
+        outermost = _sleep_depth == 0
+        if outermost:
             # Outermost sleep: snapshot current tracking state for restore.
             eye_tracking_state.control_zoom = actions.tracking.control_zoom_enabled()
             eye_tracking_state.control = actions.tracking.control_enabled()
@@ -197,6 +227,15 @@ class Actions:
             actions.user.mouse_scroll_stop()
             actions.user.mouse_drag_end()
         _sleep_depth += 1
+        _log_tracker_event(
+            "mouse_sleep",
+            outermost=outermost,
+            depth_before=depth_before,
+            depth_after=_sleep_depth,
+            snapshot_control=eye_tracking_state.control if outermost else None,
+            snapshot_control_zoom=eye_tracking_state.control_zoom if outermost else None,
+            snapshot_control1=eye_tracking_state.control1 if outermost else None,
+        )
 
     def copy_mouse_position():
         """Copy the current mouse position coordinates"""
