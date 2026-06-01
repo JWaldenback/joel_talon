@@ -11,7 +11,7 @@ required keys are `name`, `display`, and `processes` (lowercase exe names).
 
 from talon import Module, actions, app, cron, scope, settings
 
-from .mic_state_log import log as _state_log
+from .mic_and_eye_tracker_state_log import log as _state_log
 
 mod = Module()
 

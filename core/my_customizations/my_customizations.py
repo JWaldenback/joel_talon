@@ -235,7 +235,7 @@ class UserActions:
             actions.speech.set_microphone(_mic_before_sleep)
             _mic_before_sleep = None
             actions.user.mouse_wake()
-            actions.user.mic_state_log(
+            actions.user.mic_and_eye_tracker_state_log(
                 "toggle_talon_sleep_resume",
                 {"source": "toggle_talon_sleep", "restored_mic": restored},
             )
@@ -249,7 +249,7 @@ class UserActions:
                 saved = current_mic
                 actions.speech.set_microphone("None")
             actions.user.mouse_sleep()
-            actions.user.mic_state_log(
+            actions.user.mic_and_eye_tracker_state_log(
                 "toggle_talon_sleep_pause",
                 {"source": "toggle_talon_sleep", "saved_mic": saved, "current_mic": current_mic},
             )

@@ -104,7 +104,7 @@ def _log_tracker_event(event: str, **fields):
     eye-tracker sync bugs (depth drift, missed wake, etc.) can be diagnosed
     after the fact. Never propagate failures into the sleep/wake path."""
     try:
-        actions.user.mic_state_log(event, {"source": "mouse_sleep_wake", **fields})
+        actions.user.mic_and_eye_tracker_state_log(event, {"source": "mouse_sleep_wake", **fields})
     except Exception:
         pass
 
