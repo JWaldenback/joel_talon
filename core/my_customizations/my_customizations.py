@@ -247,9 +247,23 @@ class UserActions:
             # and the mouse. Use the dedicated flag rather than
             # _mic_before_sleep, which can be None even when we DID call
             # mouse_sleep (mic was already None at pause time).
-            restored = _mic_before_sleep
             if _mic_before_sleep:
+                restored = _mic_before_sleep
                 actions.speech.set_microphone(_mic_before_sleep)
+            else:
+                # We didn't have a real mic to save at pause time (it was
+                # already None — typically because the watcher cleared it
+                # with no previous_microphone of its own, leaving Talon
+                # muted indefinitely). Fall back to System Default so the
+                # user actually gets a working mic from this resume.
+                # Otherwise the toggle would just flip the tracker but
+                # leave the user unable to use Talon by voice.
+                current_mic = actions.sound.active_microphone()
+                if current_mic == "None":
+                    restored = "System Default (fallback)"
+                    actions.speech.set_microphone("System Default")
+                else:
+                    restored = None
             _mic_before_sleep = None
             actions.user.mouse_wake()
             _toggle_owns_sleep = False
