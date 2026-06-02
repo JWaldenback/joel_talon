@@ -9,11 +9,14 @@ conversation new: key(ctrl-n)
 sidebar toggle: key(ctrl-b)
 search chats: key(ctrl-k)
 command bar: key(ctrl-k)
+go (next | forth): key(alt-right)
+go (last | back | previous): key(alt-left)
 
 # Submission / cancellation
 message send: key(enter)
 message cancel: key(esc)
 stop it: key(esc)
+new (line | row): key(shift-enter)
 
 # Slash commands
 # Full reference: https://code.claude.com/docs/en/commands
