@@ -18,11 +18,18 @@ def gui_select(gui: imgui.GUI):
 
 modifier = ""
 
-# State for toggle_talon_sleep: the mic name active at pause time, so we
-# can restore it on resume. We pause via the input device (set_microphone
-# "None") because speech.disable/enable can leave Talon's cubeb stream in
-# a stale state — same reasoning as mic_capture_watcher.
+# State for toggle_talon_sleep:
+#   _mic_before_sleep: the mic name active at pause time, so we can restore
+#     it on resume. Stays None if the mic was already None at pause time
+#     (e.g. user already had it muted) — there's nothing meaningful to
+#     restore in that case.
+#   _toggle_owns_sleep: True iff this toggle has an outstanding mouse_sleep
+#     awaiting a matching mouse_wake. The dedicated flag is the source of
+#     truth for "are we currently paused via this toggle" — _mic_before_sleep
+#     is NOT a reliable proxy because it's only set when there was a mic
+#     to save in the first place.
 _mic_before_sleep = None
+_toggle_owns_sleep = False
 @imgui.open(x=700, y=0)
 def gui_hold_modifier(gui: imgui.GUI):
     gui.text(f"Modifier held:")
@@ -234,13 +241,18 @@ class UserActions:
         gui_select.hide()
 
     def toggle_talon_sleep():
-        global _mic_before_sleep
-        if _mic_before_sleep:
-            # Paused → wake: restore the previously-active mic and mouse.
+        global _mic_before_sleep, _toggle_owns_sleep
+        if _toggle_owns_sleep:
+            # Paused → wake: restore the previously-active mic (if any)
+            # and the mouse. Use the dedicated flag rather than
+            # _mic_before_sleep, which can be None even when we DID call
+            # mouse_sleep (mic was already None at pause time).
             restored = _mic_before_sleep
-            actions.speech.set_microphone(_mic_before_sleep)
+            if _mic_before_sleep:
+                actions.speech.set_microphone(_mic_before_sleep)
             _mic_before_sleep = None
             actions.user.mouse_wake()
+            _toggle_owns_sleep = False
             actions.user.mic_and_eye_tracker_state_log(
                 "toggle_talon_sleep_resume",
                 {"source": "toggle_talon_sleep", "restored_mic": restored},
@@ -268,10 +280,11 @@ class UserActions:
                 saved = current_mic
                 actions.speech.set_microphone("None")
             actions.user.mouse_sleep()
+            _toggle_owns_sleep = True
             actions.user.mic_and_eye_tracker_state_log(
                 "toggle_talon_sleep_pause",
                 {"source": "toggle_talon_sleep", "saved_mic": saved, "current_mic": current_mic},
             )
 
     def toggle_talon_sleep_holds_tracker_pause() -> bool:
-        return _mic_before_sleep is not None
+        return _toggle_owns_sleep
