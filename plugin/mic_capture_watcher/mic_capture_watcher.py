@@ -123,11 +123,21 @@ def _activate(name: str):
     # If Talon is already sleeping, don't touch speech or the mouse —
     # speech.enable() on resume would wake Talon, and stacking a sleep
     # would entangle our restore with the user's "talon wake".
+    # Likewise, if toggle_talon_sleep (numpad-divide pause) already
+    # holds the tracker pause, do NOT call mouse_sleep again — stacking
+    # would orphan _sleep_depth and the toggle's eventual mouse_wake
+    # would only decrement to 1, leaving the tracker stuck off.
     was_sleeping = "sleep" in scope.get("mode") if not was_any_active else None
+    toggle_holds_pause = False
+    if not was_any_active:
+        try:
+            toggle_holds_pause = actions.user.toggle_talon_sleep_holds_tracker_pause()
+        except Exception:
+            pass
     saved_mic = None
     if not was_any_active:
         try:
-            if not was_sleeping:
+            if not was_sleeping and not toggle_holds_pause:
                 current_mic = actions.sound.active_microphone()
                 if current_mic and current_mic != "None":
                     _global["previous_microphone"] = current_mic
@@ -137,7 +147,7 @@ def _activate(name: str):
                     _service_state[name]["disabled_by_us"] = True
         except Exception as e:
             print(f"[mic_capture_watcher] disable failed: {e}")
-        if not was_sleeping:
+        if not was_sleeping and not toggle_holds_pause:
             try:
                 actions.user.mouse_sleep()
                 _global["mouse_slept_by_us"] = True
@@ -149,6 +159,7 @@ def _activate(name: str):
         service=name,
         first_active=not was_any_active,
         was_sleeping=was_sleeping,
+        toggle_holds_pause=toggle_holds_pause,
         saved_mic=saved_mic,
     )
     app.notify(f"Talon paused: {service['display']} active")
@@ -344,6 +355,13 @@ class Actions:
         msg = ", ".join(sorted(active)) if active else "none"
         app.notify(f"Active capture services: {msg}")
         print(f"[mic_capture_watcher] active={active}")
+
+    def mic_capture_watcher_holds_tracker_pause() -> bool:
+        """True if the watcher currently owns an active mouse_sleep state.
+        Used by toggle_talon_sleep to avoid stacking a second mouse_sleep
+        on top, which would orphan the _sleep_depth counter and leave the
+        tracker permanently off after the watcher's eventual wake."""
+        return _global["mouse_slept_by_us"]
 
     def mic_capture_dump_sessions():
         """Print every audio capture session (pid, process, state) to the log.

@@ -84,6 +84,12 @@ class Actions:
         — same primitive the mic_capture_watcher uses, so external dictation
         and the keypad-divide pause stay symmetric."""
 
+    def toggle_talon_sleep_holds_tracker_pause() -> bool:
+        """True if toggle_talon_sleep is the current owner of an active
+        mouse_sleep state. Used by mic_capture_watcher to avoid stacking
+        a second mouse_sleep on top, which would orphan the _sleep_depth
+        counter and leave the tracker permanently off."""
+
 ctx=Context()
 
 @ctx.action_class("user")
@@ -240,6 +246,19 @@ class UserActions:
                 {"source": "toggle_talon_sleep", "restored_mic": restored},
             )
         else:
+            # Awake → pause. If the watcher already holds the tracker
+            # pause (external dictation is active), skip entirely —
+            # stacking a second mouse_sleep on top of the watcher's would
+            # bump _sleep_depth to 2, and the watcher's eventual wake
+            # would only decrement to 1, leaving the tracker stuck off.
+            # The user's press is effectively a no-op here since Talon
+            # is already paused by the watcher.
+            if actions.user.mic_capture_watcher_holds_tracker_pause():
+                actions.user.mic_and_eye_tracker_state_log(
+                    "toggle_talon_sleep_skipped",
+                    {"source": "toggle_talon_sleep", "reason": "watcher_holds_tracker_pause"},
+                )
+                return
             # Awake → pause: same primitive the mic_capture_watcher uses
             # (set_microphone "None" + mouse_sleep), no mode change.
             current_mic = actions.sound.active_microphone()
@@ -253,3 +272,6 @@ class UserActions:
                 "toggle_talon_sleep_pause",
                 {"source": "toggle_talon_sleep", "saved_mic": saved, "current_mic": current_mic},
             )
+
+    def toggle_talon_sleep_holds_tracker_pause() -> bool:
+        return _mic_before_sleep is not None
