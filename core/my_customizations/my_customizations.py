@@ -92,10 +92,11 @@ class Actions:
         and the keypad-divide pause stay symmetric."""
 
     def toggle_talon_sleep_holds_tracker_pause() -> bool:
-        """True if toggle_talon_sleep is the current owner of an active
-        mouse_sleep state. Used by mic_capture_watcher to avoid stacking
-        a second mouse_sleep on top, which would orphan the _sleep_depth
-        counter and leave the tracker permanently off."""
+        """True if toggle_talon_sleep currently holds the tracker pause.
+        Used by mic_capture_watcher to avoid redundant mic muting/restoring
+        while this toggle already owns the pause. (The tracker stack itself
+        is now keyed by owner token in mouse_sleep/mouse_wake, so stacking no
+        longer corrupts it — this guard is just for clean mic coordination.)"""
 
 ctx=Context()
 
@@ -265,7 +266,7 @@ class UserActions:
                 else:
                     restored = None
             _mic_before_sleep = None
-            actions.user.mouse_wake()
+            actions.user.mouse_wake("toggle")
             _toggle_owns_sleep = False
             actions.user.mic_and_eye_tracker_state_log(
                 "toggle_talon_sleep_resume",
@@ -273,12 +274,11 @@ class UserActions:
             )
         else:
             # Awake → pause. If the watcher already holds the tracker
-            # pause (external dictation is active), skip entirely —
-            # stacking a second mouse_sleep on top of the watcher's would
-            # bump _sleep_depth to 2, and the watcher's eventual wake
-            # would only decrement to 1, leaving the tracker stuck off.
-            # The user's press is effectively a no-op here since Talon
-            # is already paused by the watcher.
+            # pause (external dictation is active), skip entirely — Talon is
+            # already paused by the watcher, so the user's press would just
+            # add a redundant mic mute/restore. (The tracker stack is keyed
+            # by owner token now, so stacking wouldn't corrupt it — this is a
+            # behavioral choice, not a safety requirement.)
             if actions.user.mic_capture_watcher_holds_tracker_pause():
                 actions.user.mic_and_eye_tracker_state_log(
                     "toggle_talon_sleep_skipped",
@@ -293,7 +293,7 @@ class UserActions:
                 _mic_before_sleep = current_mic
                 saved = current_mic
                 actions.speech.set_microphone("None")
-            actions.user.mouse_sleep()
+            actions.user.mouse_sleep("toggle")
             _toggle_owns_sleep = True
             actions.user.mic_and_eye_tracker_state_log(
                 "toggle_talon_sleep_pause",
