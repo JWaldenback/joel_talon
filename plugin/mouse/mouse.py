@@ -92,11 +92,23 @@ class EyeTrackingState:
 
 eye_tracking_state: EyeTrackingState
 
-# mouse_sleep / mouse_wake are re-entrant: only the outermost sleep takes a
-# snapshot, only the outermost wake restores it. This prevents overlapping
-# callers (e.g. mic_capture_watcher + a voice command) from clobbering
-# each other's saved state.
-_sleep_depth = 0
+# mouse_sleep / mouse_wake track which logical "owners" currently want the
+# eye tracker paused, keyed by a stable string token. The tracker is asleep
+# iff at least one owner holds it: the snapshot is taken when the set goes
+# empty -> non-empty, and restored when it goes non-empty -> empty. This still
+# lets overlapping callers (e.g. mic_capture_watcher + a manual toggle) nest
+# without clobbering each other's saved state.
+#
+# Why a set of owners instead of a plain depth counter: an integer counter
+# drifts PERMANENTLY if any caller's sleep/wake calls don't perfectly balance.
+# A single orphaned mouse_sleep wedged the baseline at 1, which then silently
+# disabled the tracker pause for EVERY later caller (the manual toggle AND the
+# dictation auto-pause), because each subsequent sleep/wake looked "nested".
+# With an owner set, a repeated sleep by the same owner is idempotent
+# (set.add) and a wake by an owner that isn't currently held is a harmless
+# no-op (set.discard) — so the stack self-heals and can't get stuck. Callers
+# that don't pass an owner share the default "manual" token.
+_sleep_owners: set = set()
 
 
 def _log_tracker_event(event: str, **fields):
@@ -140,21 +152,26 @@ class Actions:
         )
         actions.tracking.zoom_cancel()
 
-    def mouse_wake():
-        """Re-enable eye tracking state and disables cursor"""
-        global _sleep_depth
-        depth_before = _sleep_depth
-        if _sleep_depth > 1:
-            _sleep_depth -= 1
+    def mouse_wake(owner: str = "manual"):
+        """Release this owner's tracker pause; restore eye tracking once no
+        owner still holds it. `owner` is a stable token (e.g. "toggle",
+        "watcher", "dictation"). A wake by an owner that isn't currently held
+        is a harmless no-op, so repeated or forgotten wakes can't wedge the
+        stack."""
+        global _sleep_owners
+        was_held = owner in _sleep_owners
+        _sleep_owners.discard(owner)
+        if _sleep_owners:
+            # Someone else still wants the tracker paused — don't restore yet.
             _log_tracker_event(
                 "mouse_wake",
                 outermost=False,
-                depth_before=depth_before,
-                depth_after=_sleep_depth,
+                owner=owner,
+                was_held=was_held,
+                remaining=sorted(_sleep_owners),
             )
             return
-        _sleep_depth = 0
-        # Restore the exact snapshot taken at the outermost mouse_sleep.
+        # Last owner released: restore the snapshot taken at the first sleep.
         actions.tracking.control_zoom_toggle(eye_tracking_state.control_zoom)
         actions.tracking.control_toggle(eye_tracking_state.control)
         actions.tracking.control1_toggle(eye_tracking_state.control1)
@@ -170,8 +187,9 @@ class Actions:
         _log_tracker_event(
             "mouse_wake",
             outermost=True,
-            depth_before=depth_before,
-            depth_after=_sleep_depth,
+            owner=owner,
+            was_held=was_held,
+            remaining=[],
             restored_control=eye_tracking_state.control,
             restored_control_zoom=eye_tracking_state.control_zoom,
             restored_control1=eye_tracking_state.control1,
@@ -204,13 +222,18 @@ class Actions:
         else:
             actions.mouse_drag(button)
 
-    def mouse_sleep():
-        """Disables control mouse, zoom mouse, and re-enables cursor"""
-        global _sleep_depth, eye_tracking_state
-        depth_before = _sleep_depth
-        outermost = _sleep_depth == 0
+    def mouse_sleep(owner: str = "manual"):
+        """Pause the eye tracker on behalf of `owner` (a stable token, e.g.
+        "toggle", "watcher", "dictation"), disable zoom mouse, and re-enable
+        the cursor. The first owner to hold the pause snapshots current
+        tracking state for restore; repeated sleeps by the same owner are
+        idempotent (no re-snapshot, no drift)."""
+        global _sleep_owners, eye_tracking_state
+        outermost = not _sleep_owners
+        already_held = owner in _sleep_owners
+        _sleep_owners.add(owner)
         if outermost:
-            # Outermost sleep: snapshot current tracking state for restore.
+            # First owner: snapshot current tracking state for restore.
             eye_tracking_state.control_zoom = actions.tracking.control_zoom_enabled()
             eye_tracking_state.control = actions.tracking.control_enabled()
             eye_tracking_state.control1 = actions.tracking.control1_enabled()
@@ -226,12 +249,12 @@ class Actions:
             actions.user.mouse_cursor_show()
             actions.user.mouse_scroll_stop()
             actions.user.mouse_drag_end()
-        _sleep_depth += 1
         _log_tracker_event(
             "mouse_sleep",
             outermost=outermost,
-            depth_before=depth_before,
-            depth_after=_sleep_depth,
+            owner=owner,
+            already_held=already_held,
+            holders=sorted(_sleep_owners),
             snapshot_control=eye_tracking_state.control if outermost else None,
             snapshot_control_zoom=eye_tracking_state.control_zoom if outermost else None,
             snapshot_control1=eye_tracking_state.control1 if outermost else None,

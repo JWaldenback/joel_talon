@@ -95,7 +95,9 @@ def _resume_on_main():
     except Exception as e:
         print(f"[voice_dictation_resume] mark disabled_by_us failed: {e}")
     try:
-        actions.user.mouse_wake()
+        # Pairs with the watcher's mouse_sleep("watcher") taken when the
+        # dictation pill opened, so use the same owner token.
+        actions.user.mouse_wake("watcher")
     except Exception as e:
         print(f"[voice_dictation_resume] mouse_wake failed: {e}")
     cron.after("600ms", _close_pill_if_still_active)

@@ -10,28 +10,8 @@
 
 from talon import Module, Context, actions, app, scope
 
-#import mouse.py file so I can reach the variable `eye_tracking`
-from ...plugin.mouse.mouse import get_eye_tracking_variable
-
 
 mod = Module()
-
-
-# Remembers the last non-"None" microphone so we can restore it when the
-# user toggles the mic back on without depending on talon_hud.
-_previous_microphone = "System Default"
-
-
-def _disable_microphone():
-    global _previous_microphone
-    current = actions.sound.active_microphone()
-    if current != "None":
-        _previous_microphone = current
-    actions.speech.set_microphone("None")
-
-
-def _restore_microphone():
-    actions.speech.set_microphone(_previous_microphone)
 
 
 @mod.action_class
@@ -140,11 +120,17 @@ class UserActions:
             actions.user.mouse_sleep()
     """
 
-    # Toggling the mic OFF also disables the eye tracker so it stops logging
-    # eye movements. Toggling ON re-enables tracking based on the current
-    # eye_tracking mode — the mode setting itself persists across the toggle,
-    # so nothing extra needs to be remembered. In "no eye tracker" mode the
-    # tracker actions are skipped entirely.
+    """
+    # Previous version: this function was its OWN pause/resume owner — it
+    # called set_microphone("None") + mouse_sleep() / _restore_microphone() +
+    # mouse_wake() directly, separate from user.toggle_talon_sleep (which the
+    # HUD mic icon, HUD mode toggle, and numpad-divide all use). That made two
+    # uncoordinated owners of the re-entrant mouse_sleep/mouse_wake depth
+    # counter. Pausing here (Scroll Lock / "mic toggle" / foot pedal) and then
+    # resuming via the HUD icon (or any mix of the two) left _sleep_depth stuck
+    # at 1, so every later mouse_wake hit the "nested wake" early-return and
+    # never re-enabled the eye tracker — the mic came back but the tracker
+    # stayed off.
     def toggle_talon_microphone():
         current_microphone = actions.sound.active_microphone()
         eye_tracking = get_eye_tracking_variable()
@@ -164,6 +150,27 @@ class UserActions:
             _disable_microphone()
             if eye_tracking != "no eye tracker":
                 actions.user.mouse_sleep()
+    """
+
+    # Single source of truth for the mic + eye-tracker pause/resume is
+    # user.toggle_talon_sleep — it holds the "toggle" owner token in the
+    # mouse_sleep/mouse_wake stack and coordinates with the
+    # mic_capture_watcher, and mouse_wake already restores
+    # the tracker correctly for every eye_tracking mode (gaze / hiss / none).
+    # This action now just delegates, so Scroll Lock, the "mic toggle" voice
+    # command, the foot pedal, and the HUD mic icon are all the SAME function
+    # and can't drift out of sync with each other.
+    #
+    # The green "ON" / red "OFF" HUD indicator is layered on top. Direction is
+    # read from the toggle's ownership flag (not the live mic state) so the
+    # label matches whether toggle_talon_sleep is about to resume or pause.
+    def toggle_talon_microphone():
+        resuming = actions.user.toggle_talon_sleep_holds_tracker_pause()
+        actions.user.toggle_talon_sleep()
+        if resuming:
+            actions.user.hud_add_log('success', 'ON')
+        else:
+            actions.user.hud_add_log('error', 'OFF')
 
 
     def start_stop_dictation():
@@ -197,11 +204,11 @@ class UserActions:
         if "sleep" in scope.get("mode"):
             #add some sleep time to make sure Talon doesn't pick up any speech
             actions.sleep("500ms")
-            actions.user.mouse_wake()
+            actions.user.mouse_wake("dictation")
             actions.speech.toggle()
             actions.user.voice_dictation_disarm_keypress_resume()
         else:
-            actions.user.mouse_sleep()
+            actions.user.mouse_sleep("dictation")
             actions.speech.toggle()
             actions.user.start_stop_dictation()
             actions.user.voice_dictation_arm_keypress_resume()
