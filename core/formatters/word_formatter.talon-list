@@ -4,4 +4,5 @@ list: user.word_formatter
 word: ALL_LOWERCASE
 trot: TRAILING_SPACE,ALL_LOWERCASE
 proud: CAPITALIZE_FIRST_WORD
-leap: TRAILING_SPACE,CAPITALIZE_FIRST_WORD
+# Commented out: "leap" is being mistaken for "delete".
+#leap: TRAILING_SPACE,CAPITALIZE_FIRST_WORD
