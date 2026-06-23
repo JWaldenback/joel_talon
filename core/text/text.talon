@@ -58,16 +58,16 @@ nope it was <user.formatters>: user.formatters_reformat_last(formatters)
     edit.extend_word_right()
     edit.extend_word_right()
     #edit.extend_left()
-    user.formatters_reformat_selection("smash")
+    user.formatters_reformat_selection("NO_SPACES")
 
 ^(sink | sunk | lowercase) word$:
     edit.select_word()
-    user.formatters_reformat_selection("all down")
+    user.formatters_reformat_selection("ALL_LOWERCASE")
     edit.left()
 
 ^(ship | uppercase) word$:
     edit.select_word()
-    user.formatters_reformat_selection("title")
+    user.formatters_reformat_selection("CAPITALIZE_ALL_WORDS")
     edit.left()
 
 # <user.formatters> word:
@@ -78,7 +78,7 @@ nope it was <user.formatters>: user.formatters_reformat_last(formatters)
     user.navigation_literal_text("GO", "left", "AFTER", ".", 1)
     edit.word_right()
     edit.select_word()
-    user.formatters_reformat_selection("title")
+    user.formatters_reformat_selection("CAPITALIZE_ALL_WORDS")
     #edit.left()
     edit.line_end()
 
@@ -86,7 +86,7 @@ nope it was <user.formatters>: user.formatters_reformat_last(formatters)
     user.navigation_literal_text("GO", "left", "AFTER", "?", 1)
     edit.word_right()
     edit.select_word()
-    user.formatters_reformat_selection("title")
+    user.formatters_reformat_selection("CAPITALIZE_ALL_WORDS")
     #edit.left()
     edit.line_end()
 
@@ -94,27 +94,27 @@ nope it was <user.formatters>: user.formatters_reformat_last(formatters)
     user.navigation_literal_text("GO", "left", "AFTER", "!", 1)
     edit.word_right()
     edit.select_word()
-    user.formatters_reformat_selection("title")
+    user.formatters_reformat_selection("CAPITALIZE_ALL_WORDS")
     #edit.left()
     edit.line_end()
 
 ^(ship | uppercase) start$:
     edit.line_start()
     edit.select_word()
-    user.formatters_reformat_selection("title")
+    user.formatters_reformat_selection("CAPITALIZE_ALL_WORDS")
     #edit.left()
     edit.line_end()
 
 ^(ship | uppercase) line$:
     edit.select_line()
-    user.formatters_reformat_selection("sentence")
+    user.formatters_reformat_selection("CAPITALIZE_FIRST_WORD")
     #edit.left()
     edit.line_end()
 
 ^(sink | sunk | lowercase) start$:
     edit.line_start()
     edit.select_word()
-    user.formatters_reformat_selection("all down")
+    user.formatters_reformat_selection("ALL_LOWERCASE")
     #edit.left()
     edit.line_end()
     
@@ -122,7 +122,7 @@ nope it was <user.formatters>: user.formatters_reformat_last(formatters)
     user.navigation_literal_text("GO", "left", "AFTER", symbol_key, 1)
     edit.word_right()
     edit.select_word()
-    user.formatters_reformat_selection("all down")
+    user.formatters_reformat_selection("ALL_LOWERCASE")
     #edit.left()
     edit.line_end()
 
