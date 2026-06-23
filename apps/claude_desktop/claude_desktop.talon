@@ -16,6 +16,9 @@ go (last | back | previous): key(alt-left)
 message send: key(enter)
 message cancel: key(esc)
 stop it: key(esc)
+stop generating: key(esc)
+# focus input: key(ctrl-shift-;)  # not the correct shortcut yet
+
 new (line | row): key(shift-enter)
 
 # Slash commands
