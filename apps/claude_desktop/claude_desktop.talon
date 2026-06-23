@@ -2,8 +2,7 @@ app: claude_desktop
 -
 
 # Conversations
-chat new: key(ctrl-n)
-conversation new: key(ctrl-n)
+(chat | convo | conversation) new: key(ctrl-n)
 
 # Sidebar / navigation
 sidebar toggle: key(ctrl-b)
@@ -43,8 +42,8 @@ slash memory: insert("/memory")
 slash diff: insert("/diff")
 
 # App
-open settings: key(ctrl-comma)
-shortcuts help: key(ctrl-/)
+settings open: key(ctrl-comma)
+keyboard shortcuts: key(ctrl-/)
 reload it: key(ctrl-r)
 zoom in: key(ctrl-=)
 zoom out: key(ctrl--)
