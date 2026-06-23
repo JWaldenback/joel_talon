@@ -63,12 +63,10 @@ nope it was <user.formatters>: user.formatters_reformat_last(formatters)
 ^(sink | sunk | lowercase) word$:
     edit.select_word()
     user.formatters_reformat_selection("ALL_LOWERCASE")
-    edit.left()
 
 ^(ship | uppercase) word$:
     edit.select_word()
     user.formatters_reformat_selection("CAPITALIZE_ALL_WORDS")
-    edit.left()
 
 # <user.formatters> word:
 #     edit.select_word()
