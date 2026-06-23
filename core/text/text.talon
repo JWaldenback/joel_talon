@@ -103,12 +103,6 @@ nope it was <user.formatters>: user.formatters_reformat_last(formatters)
     #edit.left()
     edit.line_end()
 
-^(ship | uppercase) line$:
-    edit.select_line()
-    user.formatters_reformat_selection("CAPITALIZE_FIRST_WORD")
-    #edit.left()
-    edit.line_end()
-
 ^(sink | sunk | lowercase) start$:
     edit.line_start()
     edit.select_word()
