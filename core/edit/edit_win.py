@@ -12,11 +12,9 @@ os: windows
 class EditActions:
     def copy():
         actions.key("ctrl-c")
-        actions.user.clipboard_manager_update()
 
     def cut():
         actions.key("ctrl-x")
-        actions.user.clipboard_manager_update()
 
     def delete():
         actions.key("backspace")

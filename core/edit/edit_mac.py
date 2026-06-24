@@ -10,11 +10,9 @@ os: mac
 class EditActions:
     def copy():
         actions.key("cmd-c")
-        actions.user.clipboard_manager_update()
 
     def cut():
         actions.key("cmd-x")
-        actions.user.clipboard_manager_update()
 
     def delete():
         actions.key("backspace")
