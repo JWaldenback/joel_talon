@@ -1,10 +1,10 @@
 tag: browser
 browser.host: gemini.google.com
 -
-(chat | convo | conversation) new: key(ctrl-shift-o)
+(chat | convo) new: key(ctrl-shift-o)
 
 [message] send: key(enter)
-(stop | stop generating): key(escape)
+stop generating: key(escape)
 
 focus input: key(ctrl-/)
 (sidebar | menu) toggle: key(ctrl-shift-s)

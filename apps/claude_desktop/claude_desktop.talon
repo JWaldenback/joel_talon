@@ -2,7 +2,7 @@ app: claude_desktop
 -
 
 # Conversations
-(chat | convo | conversation) new: key(ctrl-n)
+(chat | convo) new: key(ctrl-n)
 
 # Sidebar / navigation
 sidebar toggle: key(ctrl-b)
@@ -13,7 +13,6 @@ go (last | back | previous): key(alt-left)
 # Submission / cancellation
 message send: key(enter)
 message cancel: key(esc)
-stop it: key(esc)
 stop generating: key(esc)
 # focus input: key(ctrl-shift-;)  # not the correct shortcut yet
 
