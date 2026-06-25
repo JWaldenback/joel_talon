@@ -6,8 +6,7 @@ app: claude_desktop
 
 # Sidebar / navigation
 sidebar toggle: key(ctrl-b)
-search chats: key(ctrl-k)
-command bar: key(ctrl-k)
+search: key(ctrl-k)
 go (next | forth): key(alt-right)
 go (last | back | previous): key(alt-left)
 
