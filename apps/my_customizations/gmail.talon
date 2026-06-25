@@ -2,10 +2,10 @@ tag: browser
 browser.host: mail.google.com
 #https://support.google.com/mail/answer/6594?hl=en&co=GENIE.Platform%3DDesktop
 -
-(conversation | convo | thread) last: key(k)
-(conversation | convo | thread) next: key(j)
-(comment | message | email) last: key(p)
-(comment | message | email) next: key(n)
+(chat | convo | thread | email) last: key(k)
+(chat | convo | thread | email) next: key(j)
+(comment | message) last: key(p)
+(comment | message) next: key(n)
 
 go [to] inbox: 
     key(g)
