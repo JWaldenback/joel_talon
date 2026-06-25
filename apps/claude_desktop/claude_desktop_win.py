@@ -23,7 +23,8 @@ app: claude_desktop
 # The message box is a chat input, not a text editor, so "insert a line
 # below" should just be a soft newline (shift-enter). Talon resolves actions
 # by context but voice commands have no precedence, so we override the action
-# here and route the newline voice commands through it (see claude_desktop.talon).
+# here; the global "new (line | row)" command in core/edit/edit.talon routes
+# through it.
 @ctx.action_class("edit")
 class EditActions:
     def line_insert_down():

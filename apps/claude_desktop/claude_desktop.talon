@@ -17,8 +17,6 @@ stop it: key(esc)
 stop generating: key(esc)
 # focus input: key(ctrl-shift-;)  # not the correct shortcut yet
 
-(new line | new row): edit.line_insert_down()
-
 # Slash commands
 # Full reference: https://code.claude.com/docs/en/commands
 slash help: insert("/help")
