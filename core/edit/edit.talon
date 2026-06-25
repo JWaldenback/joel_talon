@@ -149,7 +149,7 @@ clone line: edit.line_clone()
 # Insert new line
 new line above: edit.line_insert_up()
 new line below: edit.line_insert_down()
-(new line | line new): edit.line_insert_down()
+(new line | new row | line new): edit.line_insert_down()
 (new paragraph | paragraph new): 
   edit.line_insert_down() 
   edit.line_insert_down()
