@@ -1,7 +1,7 @@
 tag: browser
 browser.host: gemini.google.com
 -
-(chat | convo) new: key(ctrl-shift-o)
+(chat | convo | thread) new: key(ctrl-shift-o)
 
 [message] send: key(enter)
 stop generating: key(escape)
@@ -13,5 +13,5 @@ settings open: key(ctrl-,)
 
 response copy: key(ctrl-shift-c)
 
-(convo | conversation | thread) next: key(alt-down)
-(convo | conversation | thread) last: key(alt-up)
+(chat | convo | thread) next: key(alt-down)
+(chat | convo | thread) last: key(alt-up)

@@ -2,7 +2,7 @@ app: claude_desktop
 -
 
 # Conversations
-(chat | convo) new: key(ctrl-n)
+(chat | convo | thread) new: key(ctrl-n)
 
 # Sidebar / navigation
 sidebar toggle: key(ctrl-b)
