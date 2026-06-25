@@ -18,3 +18,13 @@ and app.exe: /^claude\.exe$/i
 ctx.matches = r"""
 app: claude_desktop
 """
+
+
+# The message box is a chat input, not a text editor, so "insert a line
+# below" should just be a soft newline (shift-enter). Talon resolves actions
+# by context but voice commands have no precedence, so we override the action
+# here and route the newline voice commands through it (see claude_desktop.talon).
+@ctx.action_class("edit")
+class EditActions:
+    def line_insert_down():
+        actions.key("shift-enter")
