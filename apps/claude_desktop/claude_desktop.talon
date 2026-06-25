@@ -5,7 +5,7 @@ app: claude_desktop
 (chat | convo | thread) new: key(ctrl-n)
 
 # Sidebar / navigation
-sidebar toggle: key(ctrl-b)
+(sidebar | menu) toggle: key(ctrl-b)
 search: key(ctrl-k)
 go (next | forth): key(alt-right)
 go (last | back | previous): key(alt-left)

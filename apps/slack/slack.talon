@@ -51,8 +51,8 @@ strike | strikethrough: user.slack_toggle_strikethrough()
 # Miscellaneous
 emote <user.text>: ":{text}:"
 (slack | lack) shortcuts: user.slack_open_keyboard_shortcuts()
-toggle left sidebar: user.slack_toggle_left_sidebar()
-toggle right sidebar: user.slack_toggle_right_sidebar()
+left (sidebar | menu) toggle: user.slack_toggle_left_sidebar()
+right (sidebar | menu) toggle: user.slack_toggle_right_sidebar()
 
 # DEPRECATED
 (move | next) focus:

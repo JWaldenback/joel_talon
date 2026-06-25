@@ -64,8 +64,8 @@ formatting apply: key(ctrl-shift-f)
 # Miscellaneous
 keyboard shortcuts: key(ctrl-/)
 #emote <user.text>: "{text}"
-[toggle] left sidebar: key(ctrl-shift-d)
-[toggle] right sidebar: key(ctrl-.)
+left (sidebar | menu) toggle: key(ctrl-shift-d)
+right (sidebar | menu) toggle: key(ctrl-.)
 
 go [to] messages <phrase>$: app.notify("Command not available")
 
