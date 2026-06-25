@@ -4,8 +4,10 @@ browser.host: mail.google.com
 -
 (chat | convo | thread | email) last: key(k)
 (chat | convo | thread | email) next: key(j)
-(comment | message) last: key(p)
-(comment | message) next: key(n)
+# Stepped through individual messages within an open conversation/thread (Gmail p/n).
+# Disabled - inbox-list navigation above is enough.
+#(comment | message) last: key(p)
+#(comment | message) next: key(n)
 
 go [to] inbox: 
     key(g)
