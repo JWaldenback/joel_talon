@@ -6,7 +6,7 @@ tag(): user.navigation
 
 title force: user.file_manager_refresh_title()
 manager show: user.file_manager_toggle_pickers()
-manager close: user.file_managjer_hide_pickers()
+manager close: user.file_manager_hide_pickers()
 manager refresh: user.file_manager_update_lists()
 go [to] <user.system_path>: user.file_manager_open_directory(system_path)
 go (last | back | previous): user.file_manager_go_back()
