@@ -9,7 +9,7 @@ app: claude_desktop
 search: key(ctrl-k)
 preview toggle: key(ctrl-shift-p)
 diff toggle: key(ctrl-shift-d)
-terminal toggle: key(ctrl-backtick)
+terminal toggle: key(ctrl-`)
 go (next | forth): key(alt-right)
 go (last | back | previous): key(alt-left)
 
