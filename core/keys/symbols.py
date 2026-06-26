@@ -69,7 +69,7 @@ symbols = [
     Symbol("%", ["percent sign"]),  # Removed: percent
     Symbol("@", ["at symbol", "at sign"]),
     Symbol("°", ["degree sign"], ["degree", "degrees"]),
-    Symbol("&", ["ampersand", "and sign"], ["amper"]),
+    Symbol("&", ["ampersand", "and sign"]),
     Symbol("-", ["hyphen"], ["minus", "dash"]),
     Symbol("–", ["en dash", "nut dash"]),
     Symbol("—", ["em dash", "mutton dash"]),
