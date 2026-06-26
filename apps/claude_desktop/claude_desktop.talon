@@ -7,6 +7,8 @@ app: claude_desktop
 # Sidebar / navigation
 (sidebar | menu) toggle: key(ctrl-b)
 search: key(ctrl-k)
+preview toggle: key(ctrl-shift-p)
+diff toggle: key(ctrl-shift-d)
 go (next | forth): key(alt-right)
 go (last | back | previous): key(alt-left)
 
