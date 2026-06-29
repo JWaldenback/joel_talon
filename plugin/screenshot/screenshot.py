@@ -1,4 +1,6 @@
 import os
+import subprocess
+import tempfile
 from datetime import datetime
 from typing import Optional
 
@@ -73,7 +75,36 @@ class Actions:
 def clipboard_rect(rect: ui.Rect):
     flash_rect(rect)
     img = screen.capture_rect(rect)
-    clip.set_image(img)
+    # Talon's clip.set_image() is unreliable on Windows (effectively a no-op),
+    # so on Windows we write the capture to a temp PNG and let PowerShell push
+    # it onto the clipboard via System.Windows.Forms.Clipboard.SetImage.
+    if app.platform == "windows":
+        set_clipboard_image_windows(img)
+    else:
+        clip.set_image(img)
+
+
+def set_clipboard_image_windows(img):
+    tmp_path = os.path.join(tempfile.gettempdir(), "talon_screenshot_clip.png")
+    img.write_file(tmp_path)
+    # Clipboard.SetImage requires a single-threaded apartment, hence -Sta.
+    ps_script = (
+        "Add-Type -AssemblyName System.Windows.Forms, System.Drawing; "
+        f"$img = [System.Drawing.Image]::FromFile('{tmp_path}'); "
+        "[System.Windows.Forms.Clipboard]::SetImage($img); "
+        "$img.Dispose()"
+    )
+    subprocess.run(
+        [
+            "powershell",
+            "-NoProfile",
+            "-NonInteractive",
+            "-Sta",
+            "-Command",
+            ps_script,
+        ],
+        creationflags=subprocess.CREATE_NO_WINDOW,
+    )
 
 
 def get_screenshot_path(title: str = ""):
