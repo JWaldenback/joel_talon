@@ -151,6 +151,9 @@ class UserActions:
 
     def address_copy_address():
         actions.key("ctrl-l")
+        # ctrl-l needs a moment to focus the address bar and select the path;
+        # without the sleep the copy fires too early and grabs nothing.
+        actions.sleep("100ms")
         actions.edit.copy()
 
     def address_navigate(address: str):
