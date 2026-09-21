@@ -342,7 +342,7 @@ class UserActions:
         )
 
         if should_click:
-            ctrl.mouse_click(button=0, hold=16000)
+            actions.mouse_click()
 
     # Gaze control is now activated while hissing.
     # Should be used with the setting "Only Left Eye" or "Only Right Eye" because it
