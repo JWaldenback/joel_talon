@@ -23,8 +23,8 @@ not speech.engine: dragon
 # engine, this controls Talon.
 ^go to sleep [<phrase>]$: speech.disable()
 #^talon sleep [<phrase>]$:
-#    speech.disable()
 #    user.deprecate_command("2025-06-25", "talon sleep (without dragon)", "go to sleep")
+#    speech.disable()
 
 #Note: The function user.hud_toggle_mode() uses the voice commands "talon sleep" and "talon wake"
 ^(talon sleep | tell and sleep) [<phrase>]$:
