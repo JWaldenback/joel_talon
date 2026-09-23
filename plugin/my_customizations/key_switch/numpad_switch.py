@@ -1,3 +1,5 @@
+import threading
+
 from talon import Module, Context, actions, cron, scope
 
 mod = Module()
@@ -14,7 +16,10 @@ num_of_numpad_keys = 14
 current_state = [False, False, False, False, False, False, False, False, False, False, False, False, False, False]
 last_state = [False, False, False, False, False, False, False, False, False, False, False, False, False, False]
 continuous_firing = [False, False, True, False, True, False, True, False, True, False, False, False, False, False]
-has_fired = [False, False, False, False, False, False, False, False, False, False, False, False, False, False]
+# Presses seen by keypad_down that on_interval hasn't handled yet. Key events
+# and the cron tick run on different threads, hence the lock.
+pending_presses = [0] * num_of_numpad_keys
+_press_lock = threading.Lock()
 
 #fires call down and call up only once
 # def on_interval():
@@ -44,19 +49,33 @@ has_fired = [False, False, False, False, False, False, False, False, False, Fals
 #fires continuously if continuous_firing is set to true and then calls call_up() once when the key is released
 def on_interval():
     for key in range(num_of_numpad_keys):
-        # Key is pressed down
-        if (current_state[key]) and (continuous_firing[key] == False) and (has_fired[key] == False):
-            last_state[key] = True
-            has_fired[key] = True
-            call_down(key)
-        elif (current_state[key]) and (continuous_firing[key] == True):
-            last_state[key] = True
-            call_down(key)
-            actions.sleep("30ms")
+        # Grab and reset the presses latched by keypad_down since the last
+        # tick. Without this, a tap whose down+up both land between two ticks
+        # (or while this cron thread is busy, e.g. switching microphones) was
+        # never seen, because current_state was already back to False.
+        with _press_lock:
+            presses = pending_presses[key]
+            pending_presses[key] = 0
+        held = current_state[key]
+        if continuous_firing[key]:
+            # Fire every tick while held, and at least once for a tap that
+            # was already released before this tick.
+            if held or presses:
+                last_state[key] = True
+                call_down(key)
+                actions.sleep("30ms")
+        else:
+            # One call_down per press. If several presses queued up (cron
+            # was late), close each earlier one with a call_up so e.g. two
+            # quick toggles still toggle twice instead of collapsing into one.
+            for _ in range(presses):
+                if last_state[key]:
+                    call_up(key)
+                call_down(key)
+                last_state[key] = True
         # Key is released
-        elif (current_state[key] == False) and (last_state[key] == True):
+        if not held and last_state[key]:
             last_state[key] = False
-            has_fired[key] = False
             call_up(key)
 
 #the on_interval() below implementation below doesn't support call_up(key)
@@ -73,7 +92,12 @@ cron.interval("10ms", on_interval)
 class Actions:
     def keypad_down(key: int):
         """Keypad key down event"""
-        current_state[key] = True
+        with _press_lock:
+            # Only count the up→down transition, so OS key auto-repeat while
+            # holding the key doesn't register as extra presses.
+            if not current_state[key]:
+                pending_presses[key] += 1
+            current_state[key] = True
 
     def keypad_up(key: int):
         """Keypad key up event"""

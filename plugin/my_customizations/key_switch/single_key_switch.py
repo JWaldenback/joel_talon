@@ -1,3 +1,4 @@
+import threading
 import time
 from talon import Module, Context, actions, cron
 
@@ -6,7 +7,10 @@ mod = Module()
 current_state = [False]
 last_state = [False]
 continuous_firing = [False]
-has_fired = [False]
+# Presses seen by key_down that on_interval hasn't handled yet. Key events and
+# the cron tick run on different threads, hence the lock.
+pending_presses = [0]
+_press_lock = threading.Lock()
 
 
 #fires call down and call up only once
@@ -27,19 +31,29 @@ has_fired = [False]
 
 def on_interval():
     for key in range(1):
-        # Key is pressed down
-        if (current_state[key]) and (continuous_firing[key] == False) and (has_fired[key] == False):
-            last_state[key] = True
-            has_fired[key] = True
-            call_down(key)
-        elif (current_state[key]) and (continuous_firing[key] == True):
-            last_state[key] = True
-            call_down(key)
-            actions.sleep("100ms")
+        # Grab and reset the presses latched by key_down since the last tick,
+        # so a tap whose down+up both land between two ticks isn't lost.
+        # Same approach as numpad_switch.py.
+        with _press_lock:
+            presses = pending_presses[key]
+            pending_presses[key] = 0
+        held = current_state[key]
+        if continuous_firing[key]:
+            if held or presses:
+                last_state[key] = True
+                call_down(key)
+                actions.sleep("100ms")
+        else:
+            # One call_down per press; close earlier queued presses with a
+            # call_up so fast repeated taps aren't collapsed into one.
+            for _ in range(presses):
+                if last_state[key]:
+                    call_up(key)
+                call_down(key)
+                last_state[key] = True
         # Key is released
-        elif (current_state[key] == False) and (last_state[key] == True):
+        if not held and last_state[key]:
             last_state[key] = False
-            has_fired[key] = False
             call_up(key)
 
 
@@ -53,7 +67,12 @@ class Actions:
 
     def key_down(key: int):
         """Key down event"""
-        current_state[key] = True
+        with _press_lock:
+            # Only count the up→down transition so key auto-repeat while
+            # holding doesn't register as extra presses.
+            if not current_state[key]:
+                pending_presses[key] += 1
+            current_state[key] = True
 
     def key_up(key: int):
         """Key up event"""
