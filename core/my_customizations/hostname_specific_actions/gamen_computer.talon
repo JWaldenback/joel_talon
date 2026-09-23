@@ -1,4 +1,4 @@
-hostname: Gamen2
+hostname: /^(Gamen|Gamen2)$/
 -
 #the carrot "^" indicates there is nothing before and the dollar "$" that nothing comes after it, so if you say "copy copy" it won't trigger the voice command "^copy$: edit.copy()"
 
