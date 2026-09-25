@@ -15,6 +15,11 @@ and app.name: Claude
 and app.exe: /^claude\.exe$/i
 """
 
+apps.claude_desktop = """
+os: mac
+and app.bundle: com.anthropic.claudefordesktop
+"""
+
 ctx.matches = r"""
 app: claude_desktop
 """

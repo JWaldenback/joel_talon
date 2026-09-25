@@ -3,7 +3,7 @@ from talon import Context, Module, actions, app
 mod = Module()
 ctx = Context()
 
-mod.apps.brave = "app.name: Vivaldi"
+mod.apps.vivaldi = "app.name: Vivaldi"
 #mod.apps.vivaldi = """
 #os: mac
 #and app.bundle: com.vivaldi.Browser
@@ -13,6 +13,7 @@ os: windows
 and app.exe: vivaldi.exe
 """
 ctx.matches = r"""
+os: windows
 app: vivaldi
 """
 

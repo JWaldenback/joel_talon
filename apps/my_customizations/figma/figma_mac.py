@@ -1,12 +1,53 @@
-from talon import Context, actions, ctrl
+from talon import Context, actions, ctrl, imgui, ui
 ctx = Context()
 ctx.matches = r"""
 os: mac
 app: Figma
 """
 
+_panning = False
+
+
+@imgui.open(x=700, y=0)
+def gui_pan(gui: imgui.GUI):
+    gui.text("Pan mode:")
+    if gui.button("Pan stop"):
+        stop_pan()
+
+
+def stop_pan():
+    global _panning
+    if _panning:
+        try:
+            ctrl.mouse_click(button=0, up=True)
+        finally:
+            actions.key("space:up")
+            _panning = False
+    gui_pan.hide()
+
+
+# Release the drag when focus leaves the application.
+ui.register("app_deactivate", lambda _: stop_pan())
+
+
 @ctx.action_class('user')
 class UserActions:
+    def figma_pan():
+        global _panning
+        if _panning:
+            return
+        try:
+            _panning = True
+            actions.key("space:down")
+            ctrl.mouse_click(button=0, down=True)
+            gui_pan.show()
+        except Exception:
+            stop_pan()
+            raise
+
+    def figma_pan_stop():
+        stop_pan()
+
     def figma_toggle_ui(): actions.key('cmd-\\')
     def figma_quick_actions(): actions.key('cmd-/')
 

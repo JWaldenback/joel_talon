@@ -1,4 +1,4 @@
-from talon import Context, Module, actions
+from talon import Context, Module, actions, app, settings
 
 mod = Module()
 ctx = Context()
@@ -14,6 +14,11 @@ and app.name: Codex
 and app.exe: /^codex\.exe$/i
 """
 
+apps.codex = """
+os: mac
+and app.bundle: com.openai.codex
+"""
+
 ctx.matches = r"""
 app: codex
 """
@@ -27,3 +32,25 @@ app: codex
 class EditActions:
     def line_insert_down():
         actions.key("shift-enter")
+
+
+mod.setting(
+    "codex_search_chats_key",
+    type=str,
+    default="",
+    desc="Mac shortcut assigned to Search chats in Codex Settings > Keyboard Shortcuts",
+)
+
+
+@mod.action_class
+class Actions:
+    def codex_search_chats():
+        """Search past Codex chats using the user's assigned Mac shortcut."""
+        if app.platform != "mac":
+            actions.key("ctrl-g")
+            return
+        shortcut = settings.get("user.codex_search_chats_key")
+        if not shortcut:
+            actions.app.notify("Assign Search chats a shortcut in Codex and set user.codex_search_chats_key")
+            return
+        actions.key(shortcut)
