@@ -44,9 +44,7 @@ strike | strikethrough: user.slack_toggle_strikethrough()
 (slack | lack) snippet: user.slack_create_snippet()
 # Calls
 (slack | lack) huddle: user.slack_huddle()
-[toggle] mute | unmute: key(m)
-(slack | lack) ([toggle] video): key(v)
-(slack | lack) invite: key(a)
+[toggle] mute | unmute: user.custom_app_shortcut("m", "cmd-shift-space")
 
 # Miscellaneous
 emote <user.text>: ":{text}:"

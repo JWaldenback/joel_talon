@@ -15,6 +15,11 @@ class Actions:
 
 
 ctx=Context()
+ctx.matches = """
+os: windows
+os: linux
+app: slack
+"""
 
 #actions.app.notify("test")
 @ctx.action_class("user")

@@ -1,4 +1,4 @@
-from talon import Module, actions
+from talon import Module, actions, app
 
 mod = Module()
 
@@ -7,7 +7,7 @@ mod = Module()
 class TabActions:
     def tab_jump(number: int):
         """Jumps to the specified tab"""
-        if number < 9:
+        if 1 <= number < 9:
             if app.platform == "mac":
                 actions.key(f"cmd-{number}")
             else:
@@ -30,7 +30,7 @@ class TabActions:
         """Duplicates the current tab."""
         actions.browser.focus_address()
         actions.sleep("180ms")
-        actions.key("alt-enter")
+        actions.user.browser_open_address_in_new_tab()
 
     def tab_left_wrapper():
         """Moves the current tab to the left."""

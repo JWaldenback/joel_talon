@@ -3,7 +3,7 @@ from talon import Context, Module, actions, app
 mod = Module()
 ctx = Context()
 
-mod.apps.brave = "app.name: Opera Internet Browser"
+mod.apps.opera_browser = "app.name: Opera Internet Browser"
 #mod.apps.opera_browser = """
 #os: mac
 #and app.bundle: com.opera_browser.Browser
@@ -13,6 +13,7 @@ os: windows
 and app.exe: opera.exe
 """
 ctx.matches = r"""
+os: windows
 app: opera_browser
 """
 

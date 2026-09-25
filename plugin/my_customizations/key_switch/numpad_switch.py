@@ -1,6 +1,6 @@
 import threading
 
-from talon import Module, Context, actions, cron, scope
+from talon import Module, Context, actions, app, cron, scope
 
 mod = Module()
 #Instantiation of the tags
@@ -316,7 +316,7 @@ class AvcActions:
         actions.user.avc_increase_participants_tiles()
 
     def keypad_7_down():
-        actions.key("f11")
+        actions.key("ctrl-cmd-f" if app.platform == "mac" else "f11")
 
     def keypad_8_down():
         actions.user.avc_toggle_chat_window()

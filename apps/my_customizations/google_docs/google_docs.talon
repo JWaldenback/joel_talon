@@ -9,22 +9,22 @@ browser.host: docs.google.com
 
 #tag(): user.native_dictation
 
-[format] normal text: key(ctrl-alt-0)
-[format] heading one: key(ctrl-alt-1)
-[format] heading two: key(ctrl-alt-2)
-[format] heading three: key(ctrl-alt-3)
-[format] heading four: key(ctrl-alt-4)
-[format] heading five: key(ctrl-alt-5)
+[format] normal text: user.custom_app_shortcut("ctrl-alt-0", "cmd-alt-0")
+[format] heading one: user.custom_app_shortcut("ctrl-alt-1", "cmd-alt-1")
+[format] heading two: user.custom_app_shortcut("ctrl-alt-2", "cmd-alt-2")
+[format] heading three: user.custom_app_shortcut("ctrl-alt-3", "cmd-alt-3")
+[format] heading four: user.custom_app_shortcut("ctrl-alt-4", "cmd-alt-4")
+[format] heading five: user.custom_app_shortcut("ctrl-alt-5", "cmd-alt-5")
 
-[format] (bullet | bulleted) list: key(ctrl-shift-8)
-[format] (number | numbered) list: key(ctrl-shift-7)
-(format bold | [format] boldify): key(ctrl-b)
-(format italic | [format] italify): key(ctrl-i)
-(format underline | [format] underlinify): key(ctrl-u)
-(format strike | format strikethrough | [format] strikify): key(alt-shift-5)
-(format link | [format] linkify): key(ctrl-k)
+[format] (bullet | bulleted) list: user.custom_app_shortcut("ctrl-shift-8", "cmd-shift-8")
+[format] (number | numbered) list: user.custom_app_shortcut("ctrl-shift-7", "cmd-shift-7")
+(format bold | [format] boldify): user.custom_app_shortcut("ctrl-b", "cmd-b")
+(format italic | [format] italify): user.custom_app_shortcut("ctrl-i", "cmd-i")
+(format underline | [format] underlinify): user.custom_app_shortcut("ctrl-u", "cmd-u")
+(format strike | format strikethrough | [format] strikify): user.custom_app_shortcut("alt-shift-5", "cmd-shift-x")
+(format link | [format] linkify): user.custom_app_shortcut("ctrl-k", "cmd-k")
 
-spelling [and grammar]: key(f7)
+spelling [and grammar]: user.custom_app_shortcut("f7", "cmd-alt-x")
 #spelling next: key(ctrl-')
 #spelling last: key(ctrl-;)
 

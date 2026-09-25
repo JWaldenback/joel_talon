@@ -141,7 +141,9 @@ class UserActions:
                 #If not, return
                 return
         actions.sleep("200ms")
-        actions.key("ctrl-shift-m")
+        actions.key("cmd-shift-m" if app.platform == "mac" else "ctrl-shift-m")
+        if app.platform == "mac":
+            return
         actions.sleep("200ms")
         actions.key("shift-tab")
         actions.sleep("200ms")
@@ -201,12 +203,12 @@ class UserActions:
     #System wide toggle huddle function. Works only if one uses the Slack desktop app, not the Slack web app
     def slack_toggle_huddle():
         if actions.user.current_app("Slack"):
-            actions.key("ctrl-shift-h")
+            actions.key("cmd-shift-h" if app.platform == "mac" else "ctrl-shift-h")
         else:
             actions.user.switcher_focus("Slack")
             actions.sleep("300ms")
             if actions.user.current_app("Slack"):
-                actions.key("ctrl-shift-h")
+                actions.key("cmd-shift-h" if app.platform == "mac" else "ctrl-shift-h")
 
     def replace_text(to_replace: str, replacer: str):
         """Replaces `to_replace` with `replacer`"""
@@ -243,6 +245,9 @@ class UserActions:
 
     def toggle_talon_sleep():
         global _mic_before_sleep, _toggle_owns_sleep
+        if app.platform == "mac":
+            actions.user.mac_talon_pause_toggle()
+            return
         if _toggle_owns_sleep:
             # Paused → wake: restore the previously-active mic (if any)
             # and the mouse. Use the dedicated flag rather than
@@ -301,4 +306,6 @@ class UserActions:
             )
 
     def toggle_talon_sleep_holds_tracker_pause() -> bool:
+        if app.platform == "mac":
+            return actions.user.mac_talon_pause_held()
         return _toggle_owns_sleep

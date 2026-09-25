@@ -36,3 +36,8 @@ virtual keyboard: key(super-ctrl-o)
 clipboard [open | history | windows]: key(super-v)
 
 show desktop: key(super-d)
+
+do not disturb toggle:
+    key(super-n)
+    sleep(1000ms)
+    key(enter)

@@ -2,16 +2,16 @@ app: claude_desktop
 -
 
 # Conversations
-(chat | convo | thread) new: key(ctrl-n)
+(chat | convo | thread) new: user.custom_app_shortcut("ctrl-n", "cmd-n")
 
 # Sidebar / navigation
-(sidebar | menu) toggle: key(ctrl-b)
-search: key(ctrl-k)
-preview toggle: key(ctrl-shift-p)
-diff toggle: key(ctrl-shift-d)
+(sidebar | menu) toggle: user.custom_app_shortcut("ctrl-b", "cmd-b")
+search: user.custom_app_shortcut("ctrl-k", "cmd-k")
+preview toggle: user.custom_app_shortcut("ctrl-shift-p", "cmd-shift-b")
+diff toggle: user.custom_app_shortcut("ctrl-shift-d", "cmd-shift-d")
 terminal toggle: key(ctrl-`)
-go (next | forth): key(alt-right)
-go (last | back | previous): key(alt-left)
+go (next | forth): user.custom_app_shortcut("alt-right", "cmd-]")
+go (last | back | previous): user.custom_app_shortcut("alt-left", "cmd-[")
 
 # Submission / cancellation
 message send: key(enter)
@@ -86,9 +86,9 @@ skill wizard: insert("/wizard")
 skill zutobi commenter: insert("/zutobi-commenter")
 
 # App
-settings open: key(ctrl-comma)
-keyboard shortcuts: key(ctrl-/)
-reload it: key(ctrl-r)
-zoom in: key(ctrl-=)
-zoom out: key(ctrl--)
-zoom reset: key(ctrl-0)
+settings open: user.custom_app_shortcut("ctrl-comma", "cmd-comma")
+keyboard shortcuts: user.custom_app_shortcut("ctrl-/", "cmd-/")
+reload it: user.custom_app_shortcut("ctrl-r", "cmd-r")
+zoom in: user.custom_app_shortcut("ctrl-=", "cmd-=")
+zoom out: user.custom_app_shortcut("ctrl--", "cmd--")
+zoom reset: user.custom_app_shortcut("ctrl-0", "cmd-0")
