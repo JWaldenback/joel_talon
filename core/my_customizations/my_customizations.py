@@ -203,12 +203,12 @@ class UserActions:
     #System wide toggle huddle function. Works only if one uses the Slack desktop app, not the Slack web app
     def slack_toggle_huddle():
         if actions.user.current_app("Slack"):
-            actions.key("ctrl-shift-h")
+            actions.key("cmd-shift-h" if app.platform == "mac" else "ctrl-shift-h")
         else:
             actions.user.switcher_focus("Slack")
             actions.sleep("300ms")
             if actions.user.current_app("Slack"):
-                actions.key("ctrl-shift-h")
+                actions.key("cmd-shift-h" if app.platform == "mac" else "ctrl-shift-h")
 
     def replace_text(to_replace: str, replacer: str):
         """Replaces `to_replace` with `replacer`"""
