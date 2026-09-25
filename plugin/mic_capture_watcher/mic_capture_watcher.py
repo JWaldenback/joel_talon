@@ -309,6 +309,9 @@ def _stop_polling():
 
 
 def _apply_setting(*_args):
+    if app.platform != "windows":
+        _stop_polling()
+        return
     if settings.get("user.mic_capture_watch_enabled"):
         _start_polling()
     else:

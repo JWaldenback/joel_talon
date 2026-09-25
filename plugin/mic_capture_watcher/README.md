@@ -6,7 +6,10 @@ actively listening, then resumes when the service stops.
 
 ## Setup
 
-This plugin needs the `comtypes` package, which is not bundled with Talon.
+This plugin is Windows-only. On macOS and Linux, its automatic polling is
+disabled and no extra package is needed.
+
+On Windows, it needs the `comtypes` package, which is not bundled with Talon.
 
 Run `install_deps.bat` once after cloning (right-click → "Run as administrator"
 since Talon lives under `C:\Program Files`).
@@ -15,8 +18,9 @@ Then restart Talon.
 
 ## Configuration
 
-The watcher auto-starts at Talon launch when `user.mic_capture_watch_enabled`
-is True (the default). To disable it, add to your `settings.talon`:
+On Windows, the watcher auto-starts at Talon launch when
+`user.mic_capture_watch_enabled` is True (the default). To disable it, add to
+your `settings.talon`:
 
 ```
 settings():

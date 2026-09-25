@@ -32,7 +32,7 @@ WM_QUIT = 0x0012
 LLKHF_INJECTED = 0x10
 LLKHF_LOWER_IL_INJECTED = 0x02
 
-LowLevelKeyboardProc = ctypes.WINFUNCTYPE(
+LowLevelKeyboardProc = getattr(ctypes, "WINFUNCTYPE", ctypes.CFUNCTYPE)(
     ctypes.c_long, ctypes.c_int, wt.WPARAM, wt.LPARAM
 )
 
