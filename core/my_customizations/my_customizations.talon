@@ -68,8 +68,3 @@ program close: user.close_program()
 
 #This works when `control mouse (zoom)` is active
 #key(f13): tracking.zoom()
-
-do not disturb toggle:
-    key(super-n)
-    sleep(1000ms)
-    key(enter)

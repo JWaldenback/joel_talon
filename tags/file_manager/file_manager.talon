@@ -47,10 +47,3 @@ folder last: user.file_manager_previous_folder_page()
 
 file next: user.file_manager_next_file_page()
 file last: user.file_manager_previous_file_page()
-
-view large icons: key(ctrl-shift-1)
-view medium icons: key(ctrl-shift-2)
-view small icons: key(ctrl-shift-4)
-view details: key(ctrl-shift-6)
-
-(refresh | reload) it: key(f5)

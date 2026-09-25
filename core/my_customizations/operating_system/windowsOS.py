@@ -30,10 +30,12 @@ class UserActions:
         shutdown("r /t 0")
 
     def system_hibernate():
+        actions.user.toggle_talon_microphone()
         shutdown("h")
         actions.key("enter")
 
     def system_lock():
+        actions.user.toggle_talon_microphone()
         #actions.user.exec("rundll32.exe user32.dll,LockWorkStation")
         actions.user.exec("C:\\Windows\\System32\\rundll32.exe user32.dll,LockWorkStation")
 

@@ -141,7 +141,9 @@ class UserActions:
                 #If not, return
                 return
         actions.sleep("200ms")
-        actions.key("ctrl-shift-m")
+        actions.key("cmd-shift-m" if app.platform == "mac" else "ctrl-shift-m")
+        if app.platform == "mac":
+            return
         actions.sleep("200ms")
         actions.key("shift-tab")
         actions.sleep("200ms")
