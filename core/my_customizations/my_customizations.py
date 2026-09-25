@@ -245,6 +245,9 @@ class UserActions:
 
     def toggle_talon_sleep():
         global _mic_before_sleep, _toggle_owns_sleep
+        if app.platform == "mac":
+            actions.user.mac_talon_pause_toggle()
+            return
         if _toggle_owns_sleep:
             # Paused → wake: restore the previously-active mic (if any)
             # and the mouse. Use the dedicated flag rather than
@@ -303,4 +306,6 @@ class UserActions:
             )
 
     def toggle_talon_sleep_holds_tracker_pause() -> bool:
+        if app.platform == "mac":
+            return actions.user.mac_talon_pause_held()
         return _toggle_owns_sleep
