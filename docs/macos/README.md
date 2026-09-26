@@ -75,8 +75,9 @@ See [Apple's Dictation instructions](https://support.apple.com/guide/mac-help/us
 and [language availability](https://www.apple.com/macos/feature-availability/).
 Both enabled languages were verified in System Settings. Swedish speech
 recognition and switching languages using only the keyboard still need a live
-test. Do not assume Control-Space switches Dictation languages independently
-of keyboard layouts on this macOS version.
+test. Control-Space was tested with only the Swedish keyboard layout enabled
+and did not change the Dictation language. Do not use it as a verified
+Dictation-only language switch for this setup.
 
 ## 3. Install Karabiner-Elements
 
