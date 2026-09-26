@@ -15,9 +15,12 @@ mod.setting(
     "mac_dictation_shortcut", type=str, default="",
     desc="Talon key sequence for Apple Dictation. Empty reads the configured macOS shortcut.",
 )
+# DictationIM can remain idle while corespeechd records on its behalf.
+# Observe input activity for both services, not mere process presence.
 mod.setting(
-    "mac_dictation_bundle_ids", type=str, default="com.apple.inputmethod.ironwood",
-    desc="Comma-separated Core Audio bundle IDs for Apple Dictation only.",
+    "mac_dictation_bundle_ids", type=str,
+    default="com.apple.inputmethod.ironwood,com.apple.CoreSpeech",
+    desc="Comma-separated Core Audio bundle IDs for Apple speech recording used by Dictation.",
 )
 
 _pause = InputPause(
