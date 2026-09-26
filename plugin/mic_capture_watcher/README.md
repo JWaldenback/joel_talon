@@ -17,8 +17,11 @@ Dictation and releases its pause if recovery is needed.
 
 If shortcut detection is unavailable, set `user.mac_dictation_shortcut` to the
 configured Talon key sequence, such as `ctrl ctrl` or `fn-d`. Automatic detection
-uses the Core Audio process bundle `com.apple.inputmethod.ironwood`; this can be
-overridden with `user.mac_dictation_bundle_ids` if Apple changes it.
+checks both `com.apple.inputmethod.ironwood` and `com.apple.CoreSpeech`: on
+recent macOS versions, CoreSpeech records while DictationIM stays idle. These
+bundle IDs can be overridden with `user.mac_dictation_bundle_ids` if Apple
+changes them. CoreSpeech is shared by Apple speech features, so other Apple
+speech input using that service also pauses Talon until recording stops.
 
 This Mac integration targets Apple Dictation only, not Superwhisper. It uses
 per-process input state rather than treating any app using the microphone as
