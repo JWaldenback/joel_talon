@@ -3,6 +3,9 @@
 The active custom command set uses Mac shortcuts and existing Talon Mac actions
 where equivalents are available. Windows implementations remain available.
 
+For installation on another Mac, see [Mac setup](docs/macos/README.md), including
+the reusable Karabiner foot-pedal rule and Swedish/English Dictation settings.
+
 ## Available on Mac
 
 - Apple Dictation handoff: `start listening`, existing dictation key switches,

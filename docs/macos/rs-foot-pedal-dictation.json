@@ -1,0 +1,39 @@
+{
+  "title": "RS foot pedal Apple Dictation",
+  "rules": [
+    {
+      "description": "RS foot pedal: Windows-H sends Apple Dictation key",
+      "manipulators": [
+        {
+          "conditions": [
+            {
+              "identifiers": [
+                {
+                  "is_keyboard": true,
+                  "product_id": 660,
+                  "vendor_id": 1972
+                }
+              ],
+              "type": "device_if"
+            }
+          ],
+          "from": {
+            "key_code": "h",
+            "modifiers": {
+              "mandatory": [
+                "command"
+              ]
+            }
+          },
+          "to": [
+            {
+              "consumer_key_code": "dictation",
+              "repeat": false
+            }
+          ],
+          "type": "basic"
+        }
+      ]
+    }
+  ]
+}
