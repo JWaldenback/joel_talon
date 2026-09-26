@@ -56,6 +56,12 @@ In **System Settings → Keyboard → Dictation**:
 3. Under **Languages → Edit**, select **English (United States)** and
    **Swedish (Sweden)** if both are wanted. Complete any language downloads.
 
+Keep **Text Input → Input Sources** set to Swedish. Dictation languages are
+configured separately; adding English Dictation does not require adding an
+English keyboard layout. This computer now has both Dictation languages enabled
+and only the Swedish keyboard layout. macOS reported that support for processing
+voice input on the Mac was still awaiting download after Swedish was added.
+
 Start Dictation with the cursor in a text field. When multiple languages are
 enabled, click the language label beside the cursor to choose another language.
 Apple also documents pressing the Globe key, if available, and choosing a
@@ -67,8 +73,10 @@ The existing Windows AutoHotkey language commands remain Windows-only.
 
 See [Apple's Dictation instructions](https://support.apple.com/guide/mac-help/use-dictation-mh40584/mac)
 and [language availability](https://www.apple.com/macos/feature-availability/).
-The bilingual procedure is documented from Apple; it was not tested during
-this pedal setup.
+Both enabled languages were verified in System Settings. Swedish speech
+recognition and switching languages using only the keyboard still need a live
+test. Do not assume Control-Space switches Dictation languages independently
+of keyboard layouts on this macOS version.
 
 ## 3. Install Karabiner-Elements
 
