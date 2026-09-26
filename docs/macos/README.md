@@ -65,7 +65,9 @@ voice input on the Mac was still awaiting download after Swedish was added.
 Start Dictation with the cursor in a text field. When multiple languages are
 enabled, click the language label beside the cursor to choose another language.
 Apple also documents pressing the Globe key, if available, and choosing a
-language. This does not require changing the Mac's interface language.
+language, but user reports below describe cases where it only switches keyboard
+layouts. Treat that route as unverified here. Changing Dictation languages does
+not require changing the Mac's interface language.
 
 The pedal below starts Dictation in its selected language. It does not choose
 Swedish or English. No dedicated language-switching pedal rule is installed.
@@ -78,6 +80,36 @@ recognition and switching languages using only the keyboard still need a live
 test. Control-Space was tested with only the Swedish keyboard layout enabled
 and did not change the Dictation language. Do not use it as a verified
 Dictation-only language switch for this setup.
+
+### Research on a shortcut that keeps the Swedish keyboard
+
+Research checked on 2026-09-26:
+
+- [An Ask Different user's test](https://apple.stackexchange.com/questions/461762/how-to-change-language-of-dictation-on-the-fly-in-ventura-or-newer-versions-of/470729)
+  found Control-Space worked with matching keyboard layouts and Dictation
+  languages, but also switched the typing layout. That does not meet this
+  setup's requirement to keep the Swedish keyboard.
+- [A bilingual user's Globe-key report](https://www.reddit.com/r/MacOS/comments/1h4suhp/id_love_to_be_able_to_switch_the_dictation/)
+  describes the same gap between Apple's instructions and actual behavior.
+  The user continued using the language badge next to the microphone.
+- [A TidBITS user's Sequoia test](https://talk.tidbits.com/t/how-can-i-avoid-keyboard-change-when-i-change-the-dictation-language/31259/12)
+  found that keeping only the desired keyboard input source avoided unwanted
+  keyboard-layout changes when choosing a Dictation language.
+- [A Keyboard Maestro forum author's workaround](https://forum.keyboardmaestro.com/t/seeking-help-for-keyboard-shortcut-to-switch-dictation-languages-in-macos-sonoma/34785/9)
+  was tested on Sonoma 14.5. It updates the Dictation locale and preferred-language
+  order, then restarts DictationIM. It can run as a standalone script; Keyboard
+  Maestro is only one way to bind a hotkey to it.
+
+The script is a candidate for separate English/Swedish hotkeys, not a verified
+solution for this Mac. On this macOS 27 installation, the preferred-language list
+exists but the locale keys used by older scripts were absent when inspected.
+Test with backed-up preferences and finished dictation before adopting it;
+restarting DictationIM can interrupt an active session. Do not change Siri's
+language or keyboard input sources as part of that test.
+
+No language-switching script has been installed. The temporary Option-Shift-L
+to Globe rule was removed without a successful test. The working Windows-H
+pedal rule remains enabled.
 
 ## 3. Install Karabiner-Elements
 
