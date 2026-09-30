@@ -166,18 +166,17 @@ class UserActions:
             os.startfile(talon_app.exe)
             talon_app.quit()  
         elif app.platform == "mac":
-            from shlex import quote
-            from subprocess import Popen
-
-            talon_app_path = quote(talon_app.path)
-            Popen(
-                [
+            helper = os.path.join(os.path.dirname(__file__), "talon_relaunch_mac.sh")
+            with open(os.devnull, "wb") as devnull:
+                os.posix_spawn(
                     "/bin/sh",
-                    "-c",
-                    f"/usr/bin/open -W {talon_app_path} ; /usr/bin/open {talon_app_path}",
-                ],
-                start_new_session=True,
-            )
+                    ["/bin/sh", helper, str(os.getpid()), talon_app.path],
+                    os.environ,
+                    file_actions=[
+                        (os.POSIX_SPAWN_DUP2, devnull.fileno(), 1),
+                        (os.POSIX_SPAWN_DUP2, devnull.fileno(), 2),
+                    ],
+                )
             talon_app.quit()
 
     def talon_close():
