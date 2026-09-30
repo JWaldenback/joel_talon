@@ -67,3 +67,46 @@ if hasattr(talon, 'test_mode'):
         watcher._tick()
         assert state == {'mic': 'Yeti', 'gaze': True, 'owners': set()}
         assert not watcher._session.active
+
+    def test_manual_pedal_restores_default_when_talon_started_muted(monkeypatch):
+        state = {'mic': 'None', 'owners': set()}
+
+        class Module:
+            def setting(self, name, **kwargs):
+                pass
+
+            def action_class(self, cls):
+                return cls
+
+        fake_talon = ModuleType('talon')
+        fake_talon.Module = Module
+        fake_talon.actions = SimpleNamespace(
+            sound=SimpleNamespace(active_microphone=lambda: state['mic'],
+                                  set_microphone=lambda name: state.update(mic=name)),
+            user=SimpleNamespace(mouse_sleep=state['owners'].add,
+                                 mouse_wake=state['owners'].discard))
+        fake_talon.app = SimpleNamespace(platform='mac', register=lambda *a: None)
+        fake_talon.cron = SimpleNamespace(cancel=lambda *a: None)
+        fake_talon.settings = SimpleNamespace(get=lambda *a: None)
+        monkeypatch.setitem(sys.modules, 'talon', fake_talon)
+        prefix = 'plugin.mic_capture_watcher'
+        monkeypatch.setitem(sys.modules, prefix + '.mic_and_eye_tracker_state_log',
+                            SimpleNamespace(log=lambda *a, **kw: None))
+        spec = importlib.util.spec_from_file_location(
+            prefix + '.manual_test',
+            Path(__file__).parents[1] / 'plugin/mic_capture_watcher/mac_dictation.py')
+        watcher = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(watcher)
+
+        watcher.Actions.mac_talon_pause_toggle()
+        assert state == {'mic': 'System Default', 'owners': set()}
+        watcher._pause.acquire('mac_dictation')
+        watcher.Actions.mac_talon_pause_toggle()
+        watcher.Actions.mac_talon_pause_toggle()
+        assert state == {'mic': 'None', 'owners': {'mac_dictation'}}
+        watcher._pause.release('mac_dictation')
+        assert state == {'mic': 'System Default', 'owners': set()}
+        watcher.Actions.mac_talon_pause_toggle()
+        assert state == {'mic': 'None', 'owners': {'mac_manual'}}
+        watcher.Actions.mac_talon_pause_toggle()
+        assert state == {'mic': 'System Default', 'owners': set()}

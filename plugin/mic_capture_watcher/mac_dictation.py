@@ -179,9 +179,14 @@ class Actions:
     def mac_talon_pause_toggle():
         """Toggle a manual pause without overriding an active dictation pause."""
         with _lock:
-            if _pause.held("mac_manual"):
+            was_held = _pause.held("mac_manual")
+            if was_held:
                 _pause.release("mac_manual")
-            else:
+            # Talon can restart with its microphone already set to None.
+            # A pedal press must still be able to turn voice input back on.
+            if not _pause.owners and actions.sound.active_microphone() in (None, "None"):
+                actions.sound.set_microphone("System Default")
+            elif not was_held:
                 _pause.acquire("mac_manual")
 
     def mac_talon_pause_held() -> bool:
