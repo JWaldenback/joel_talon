@@ -100,13 +100,59 @@ if hasattr(talon, 'test_mode'):
 
         watcher.Actions.mac_talon_pause_toggle()
         assert state == {'mic': 'System Default', 'owners': set()}
-        watcher._pause.acquire('mac_dictation')
-        watcher.Actions.mac_talon_pause_toggle()
-        watcher.Actions.mac_talon_pause_toggle()
-        assert state == {'mic': 'None', 'owners': {'mac_dictation'}}
-        watcher._pause.release('mac_dictation')
-        assert state == {'mic': 'System Default', 'owners': set()}
         watcher.Actions.mac_talon_pause_toggle()
         assert state == {'mic': 'None', 'owners': {'mac_manual'}}
         watcher.Actions.mac_talon_pause_toggle()
         assert state == {'mic': 'System Default', 'owners': set()}
+
+    def test_pedal_escapes_stuck_dictation_and_keeps_talon_resumed(monkeypatch):
+        values = {'user.mic_capture_watch_enabled': True}
+        state = {'mic': 'Yeti', 'owners': set(), 'keys': []}
+        recording = {'on': True}
+
+        class Module:
+            def setting(self, name, **kwargs):
+                values['user.' + name] = kwargs['default']
+
+            def action_class(self, cls):
+                return cls
+
+        fake_talon = ModuleType('talon')
+        fake_talon.Module = Module
+        fake_talon.actions = SimpleNamespace(
+            key=state['keys'].append,
+            sound=SimpleNamespace(active_microphone=lambda: state['mic'],
+                                  set_microphone=lambda name: state.update(mic=name)),
+            user=SimpleNamespace(mouse_sleep=state['owners'].add,
+                                 mouse_wake=state['owners'].discard))
+        fake_talon.app = SimpleNamespace(platform='mac', register=lambda *a: None,
+                                        notify=lambda *a: None)
+        fake_talon.cron = SimpleNamespace(cancel=lambda *a: None)
+        fake_talon.settings = SimpleNamespace(get=values.__getitem__)
+        monkeypatch.setitem(sys.modules, 'talon', fake_talon)
+        prefix = 'plugin.mic_capture_watcher'
+        monkeypatch.setitem(sys.modules, prefix + '.mic_and_eye_tracker_state_log',
+                            SimpleNamespace(log=lambda *a, **kw: None))
+        spec = importlib.util.spec_from_file_location(
+            prefix + '.pedal_recovery_test',
+            Path(__file__).parents[1] / 'plugin/mic_capture_watcher/mac_dictation.py')
+        watcher = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(watcher)
+        monkeypatch.setattr(watcher, '_recording', lambda: recording['on'])
+
+        watcher._tick()
+        watcher._pause.acquire('mac_manual')
+        assert state['mic'] == 'None'
+        assert state['owners'] == {'mac_dictation', 'mac_manual'}
+
+        watcher.Actions.mac_talon_pause_toggle()
+        assert state == {'mic': 'Yeti', 'owners': set(), 'keys': ['escape']}
+        watcher._tick()
+        assert state['mic'] == 'Yeti'
+        assert not watcher._session.active
+
+        recording['on'] = False
+        watcher._tick()
+        recording['on'] = True
+        watcher._tick()
+        assert watcher._session.active

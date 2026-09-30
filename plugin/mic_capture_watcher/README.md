@@ -14,6 +14,9 @@ The plugin reads your configured macOS Dictation shortcut without changing it.
 Talon’s microphone and tracking pause during recording and restore afterward.
 A separate manual Talon pause stays in effect. **Control-Option-Escape** stops
 Dictation and releases its pause if recovery is needed.
+On Mac, keypad divide also stops active Dictation with Escape and resumes Talon,
+including any manual pause. When Dictation is inactive, it retains its usual
+manual Talon pause/resume behavior.
 
 If shortcut detection is unavailable, set `user.mac_dictation_shortcut` to the
 configured Talon key sequence, such as `ctrl ctrl` or `fn-d`. Automatic detection

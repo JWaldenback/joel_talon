@@ -183,14 +183,17 @@ replacement did. Keep Control twice as the separate macOS keyboard shortcut.
    step for a new setup and was not separately observed in this session.
 4. With Talon running and gaze enabled, start Dictation and check that Talon's
    microphone and gaze pause, then restore when Dictation stops.
-5. Press the keypad-divide pedal to check manual Talon pause/resume. This pedal
-   binding belongs to Talon and therefore needs Talon running.
+5. Press the keypad-divide pedal to check manual Talon pause/resume. While
+   Apple Dictation is active, one press instead sends Escape and resumes Talon,
+   including a separate manual pause. A later press returns to normal pause.
+   This pedal binding belongs to Talon and needs Talon running.
 
 The Mac watcher uses CoreAudio and needs no extra Python package. It watches
 both DictationIM and CoreSpeech recording activity. CoreSpeech may also be used
 by other Apple speech features, so those can pause Talon too. A manual Talon
 pause remains in effect after Dictation ends. **Control-Option-Escape** releases
-a stuck Dictation pause. See the [watcher README](../../plugin/mic_capture_watcher/README.md).
+a stuck Dictation pause without clearing a separate manual pause. Keypad divide
+clears both pauses when Dictation is active. See the [watcher README](../../plugin/mic_capture_watcher/README.md).
 
 This setup leaves the pedal's hardware programming and Windows commands
 unchanged. Karabiner's mapping exists only on the Mac.

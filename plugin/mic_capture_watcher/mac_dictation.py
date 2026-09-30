@@ -177,8 +177,27 @@ class Actions:
             log("dictation_recovery", source="mac_dictation")
 
     def mac_talon_pause_toggle():
-        """Toggle a manual pause without overriding an active dictation pause."""
+        """End active Dictation or toggle Talon's manual input pause."""
+        global _suppress_until_inactive
         with _lock:
+            dictation_active = _session.active
+            if not dictation_active:
+                try:
+                    dictation_active = _recording()
+                except Exception:
+                    # Keep the physical pedal useful if audio monitoring fails.
+                    pass
+            if dictation_active:
+                # Escape stops Apple Dictation without risking a new start
+                # through its Control-twice toggle shortcut.
+                actions.key("escape")
+                _session.finish()
+                _pause.release("mac_manual")
+                _suppress_until_inactive = True
+                if not _pause.owners and actions.sound.active_microphone() in (None, "None"):
+                    actions.sound.set_microphone("System Default")
+                log("dictation_pedal_recovery", source="mac_dictation")
+                return
             was_held = _pause.held("mac_manual")
             if was_held:
                 _pause.release("mac_manual")
