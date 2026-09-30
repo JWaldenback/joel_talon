@@ -88,6 +88,9 @@ def _services_active() -> set[str]:
 _service_state: dict[str, dict] = {
     s["name"]: {"active": False, "disabled_by_us": False} for s in CAPTURE_SERVICES
 }
+# A pedal recovery takes precedence over an audio session that takes a moment
+# to close. Once that session disappears, a later start can pause Talon again.
+_suppressed_until_inactive: set[str] = set()
 
 _global = {
     "speech_disabled_by_us": False,
@@ -217,7 +220,9 @@ def _deactivate(name: str):
 
 
 def _tick():
-    active_names = _services_active()
+    observed_names = _services_active()
+    _suppressed_until_inactive.intersection_update(observed_names)
+    active_names = observed_names - _suppressed_until_inactive
     for s in CAPTURE_SERVICES:
         name = s["name"]
         was_active = _service_state[name]["active"]
@@ -306,6 +311,7 @@ def _stop_polling():
     for st in _service_state.values():
         st["active"] = False
         st["disabled_by_us"] = False
+    _suppressed_until_inactive.clear()
 
 
 def _apply_setting(*_args):
@@ -343,6 +349,23 @@ def mark_disabled_by_us(name: str):
 
 @mod.action_class
 class Actions:
+    def windows_dictation_pedal_recover() -> bool:
+        """Close active Windows voice typing and release its watcher pause."""
+        if app.platform != "windows":
+            return False
+        name = "win_h_dictation"
+        if not _service_state[name]["active"] and name not in _services_active():
+            return False
+        # Escape closes the voice-typing pill without toggling Win+H back on.
+        # Disarm the keypress hook before it can schedule its own close.
+        actions.user.voice_dictation_disarm_keypress_resume()
+        actions.key("escape")
+        _suppressed_until_inactive.add(name)
+        if _service_state[name]["active"]:
+            _deactivate(name)
+        _state_log("dictation_pedal_recovery", source="mic_capture_watcher", service=name)
+        return True
+
     def mic_capture_start_watch():
         """Start polling for mic capture sessions and auto-pause Talon."""
         _start_polling()

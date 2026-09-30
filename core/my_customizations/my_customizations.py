@@ -247,6 +247,23 @@ class UserActions:
         if app.platform == "mac":
             actions.user.mac_talon_pause_toggle()
             return
+        recovered_dictation = False
+        if app.platform == "windows":
+            recovered_dictation = actions.user.windows_dictation_pedal_recover()
+            if recovered_dictation:
+                # "start listening" holds its own gaze pause, separate from
+                # both the audio watcher and the pedal's manual pause.
+                if actions.user.mouse_sleep_held("dictation"):
+                    actions.user.mouse_wake("dictation")
+                # Another capture service may still own the watcher pause.
+                if actions.user.mic_capture_watcher_holds_tracker_pause():
+                    return
+                if not _toggle_owns_sleep:
+                    if actions.sound.active_microphone() in (None, "None"):
+                        actions.speech.set_microphone("System Default")
+                    if not actions.speech.enabled():
+                        actions.speech.enable()
+                    return
         if _toggle_owns_sleep:
             # Paused → wake: restore the previously-active mic (if any)
             # and the mouse. Use the dedicated flag rather than
@@ -276,6 +293,8 @@ class UserActions:
                 "toggle_talon_sleep_resume",
                 {"source": "toggle_talon_sleep", "restored_mic": restored},
             )
+            if recovered_dictation and not actions.speech.enabled():
+                actions.speech.enable()
         else:
             # Awake → pause. If the watcher already holds the tracker
             # pause (external dictation is active), skip entirely — Talon is

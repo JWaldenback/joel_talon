@@ -31,6 +31,7 @@ WM_SYSKEYDOWN = 0x0104
 WM_QUIT = 0x0012
 LLKHF_INJECTED = 0x10
 LLKHF_LOWER_IL_INJECTED = 0x02
+VK_DIVIDE = 0x6F
 
 LowLevelKeyboardProc = getattr(ctypes, "WINFUNCTYPE", ctypes.CFUNCTYPE)(
     ctypes.c_long, ctypes.c_int, wt.WPARAM, wt.LPARAM
@@ -117,7 +118,9 @@ def _hook_proc(nCode, wParam, lParam):
         if _state["armed"]:
             kbd = ctypes.cast(lParam, ctypes.POINTER(KBDLLHOOKSTRUCT))[0]
             injected = bool(kbd.flags & (LLKHF_INJECTED | LLKHF_LOWER_IL_INJECTED))
-            if not injected:
+            # The divide pedal has its own Dictation recovery path. Do not
+            # queue the generic keypress recovery for that same key event.
+            if not injected and kbd.vkCode != VK_DIVIDE:
                 cron.after("0ms", _resume_on_main)
     return _user32.CallNextHookEx(_state["hook"] or 0, nCode, wParam, lParam)
 

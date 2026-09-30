@@ -143,6 +143,10 @@ def gui_drag(gui: imgui.GUI):
 
 @mod.action_class
 class Actions:
+    def mouse_sleep_held(owner: str) -> bool:
+        """Whether this owner currently holds the tracker pause."""
+        return owner in _sleep_owners
+
     def zoom_close():
         """Closes an in-progress zoom. Talon will move the cursor position but not click."""
         actions.user.deprecate_action(

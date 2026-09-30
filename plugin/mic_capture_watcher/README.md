@@ -82,6 +82,10 @@ processes with an active capture session. When any registered service
 matches, Talon's speech engine is disabled and the mouse is slept (so
 gaze/head tracking stops moving the cursor while you dictate elsewhere).
 When all services go inactive, both are restored.
+On Windows, keypad divide closes active voice typing with Escape and resumes
+Talon, including a pedal pause or the gaze pause held by **start listening**.
+The watcher ignores the closing audio session until it stops recording. If
+another capture service is active, Talon stays paused for that service.
 
 The audio-session approach was chosen over window-presence or process-
 presence checks because: (1) Win11's dictation pill is not enumerable as
