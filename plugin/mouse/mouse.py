@@ -1,21 +1,25 @@
+import sys
 from dataclasses import dataclass
 from pathlib import Path
 
 from talon import Context, Module, actions, app, ctrl, imgui, settings, ui
 
-# Guarded import: talon.plugins.eye_mouse_2 transitively imports eye_mouse,
-# which calls into the Tobii driver at import time and raises EyeClosedErr
-# when the tracker is disconnected. Catching that here means a missing /
-# hung tracker stops eye-mask features from working — but does NOT bring
-# down the entire mouse plugin (and the chain of modules that depend on
-# user.mouse_sleep / user.mouse_wake).
-try:
-    from talon.plugins.eye_mouse_2 import set_eye_mask
-except Exception as _eye_import_err:
-    print(f"[mouse] eye_mouse_2 import failed ({_eye_import_err}); set_eye_mask disabled")
 
-    def set_eye_mask(*_args, **_kwargs):
-        pass
+def set_eye_mask(mask: str):
+    """Select which eye(s) Talon tracks: "both", "left" or "right"."""
+    # Talon 1.0's import hook rejects `from talon.plugins.eye_mouse_2 import
+    # set_eye_mask` in user scripts (ImportError), although Talon has loaded
+    # that module itself and its set_eye_mask still drives the tray menu's
+    # "Only Left/Right Eye" items. Talon exposes no public action for this,
+    # so look the function up at call time. Doing it lazily also keeps a
+    # disconnected tracker from affecting this plugin's import.
+    plugin = sys.modules.get("talon.plugins.eye_mouse_2")
+    talon_set_eye_mask = getattr(plugin, "set_eye_mask", None)
+    if talon_set_eye_mask is None:
+        print("[mouse] talon.plugins.eye_mouse_2.set_eye_mask not found; eye mask unchanged")
+        app.notify("Eye mask is not available in this Talon version")
+        return
+    talon_set_eye_mask(mask)
 
 mod = Module()
 ctx = Context()
