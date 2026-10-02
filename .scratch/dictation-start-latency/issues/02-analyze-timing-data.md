@@ -2,7 +2,7 @@
 
 Status: blocked
 Claimed by:
-Blocked by: 01, and a few days of normal pedal use
+Blocked by: a few days of normal pedal use (timing log live since 2026-10-02)
 
 ## Outcome
 

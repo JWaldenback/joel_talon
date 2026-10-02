@@ -1,6 +1,6 @@
 # 01 Timing log for Win+H dictation starts
 
-Status: in-review
+Status: done
 Claimed by:
 Blocked by:
 
@@ -33,7 +33,7 @@ long Windows voice typing took to open, or that it never opened.
       and late ticks are logged (`test/test_dictation_timing.py`).
 - [x] The hook installs in the running Talon (`_state["hook"]` set) and a
       reload does not leave a duplicate hook thread.
-- [ ] A real pedal press produces `win_h_pressed` followed by
+- [x] A real pedal press produces `win_h_pressed` followed by
       `dictation_detected … since_win_h_ms=…` (owner presses the pedal).
 
 ## Comments
@@ -46,3 +46,9 @@ there was exactly one `voice_dictation_resume_hook` thread. Two
 `dictation_timing_writer` threads from loads before the reload fix remain
 idle until Talon restarts. No Win+H was sent by the agent, to avoid opening
 dictation on the owner's machine.
+
+2026-10-02, owner pressed the pedal; state log:
+`12:40:43.813 win_h_pressed hook_delay_ms=16 injected=False`, then
+`12:40:44.044 dictation_detected … since_win_h_ms=231`. The pill closed at
+12:41:25 without a Win+H (`since_win_h_ms=None`). Closed as done; data
+collection continues under ticket 02.

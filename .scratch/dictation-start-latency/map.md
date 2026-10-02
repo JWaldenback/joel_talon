@@ -6,7 +6,7 @@ voice typing, or starts it seconds late after repeated presses.
 
 ## Tickets
 
-- [01 Timing log for Win+H dictation starts](issues/01-timing-log.md): in-review (needs a real pedal press).
+- [01 Timing log for Win+H dictation starts](issues/01-timing-log.md): done.
 - [02 Analyze collected timing data](issues/02-analyze-timing-data.md): blocked by 01 and a few days of data.
 - [03 Tobii USB reconnects stall Talon](issues/03-tobii-usb-reconnect-stalls.md): ready-for-human.
 
