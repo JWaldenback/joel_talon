@@ -22,8 +22,25 @@ external reports, which the agent does not change or send on its own.
 
 ## Acceptance criteria
 
-- [ ] Cause of the regular two-hour detach identified or ruled out.
+- [x] Cause of the regular detaches identified (Modern Standby DRIPS mitigation; see Comments).
 - [ ] Detach count per day drops, checked with
       `grep "Tobii 5 detached" %APPDATA%\talon\talon.log*`.
 - [ ] Optional: Talon report filed for the hotplug stall and the
       `event from missing stream` flood.
+
+## Comments
+
+2026-10-02, agent: cause found. The detaches are Windows Modern Standby's
+"DRIPS blocking device" mitigation. While the PC is idle or asleep, Windows
+flags the Tobii (`VID 0x2104 PID 0x313`) as draining power (System log,
+`Microsoft-Windows-USB-USBHUB3` event 196) and on wake port-cycles it
+(event 205). Talon's `Tobii 5 detached` lines follow event 205 within
+seconds (e.g. 2026-09-30 05:07:44 → 05:07:48, 14:04:40 → 14:04:44,
+2026-10-01 11:22:23 → 11:22:23). 53 such Tobii events in 8 days. At
+14:17:35 on 2026-10-02 the port cycle left the tracker absent from Windows
+entirely (blinking, not enumerated) until replugged, so gaze mode stopped working.
+Owner-side fixes to try (system settings, so the owner applies them): in
+Device Manager, untick "Allow the computer to turn off this device to save
+power" on the Tobii's USB Composite Device and its parent hub; disable USB
+selective suspend in the power plan; or plug the tracker directly into the
+PC instead of the USB4 dock/hub.
