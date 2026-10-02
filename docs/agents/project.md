@@ -10,6 +10,27 @@ Explicit task choices override these defaults. Record effort-specific model
 pairings and authorizations in the tracker. Add standing model preferences only
 when the owner has supplied them.
 
+## Working rules
+
+- Start from the latest commit: `git pull --ff-only`, merging when it cannot
+  fast-forward (owner rule below).
+- Agent-led means: make routine implementation and design choices yourself
+  and record significant ones in the effort record. Ask the owner before
+  anything hard to reverse, outside the agreed scope, or contradicting a
+  stated requirement.
+- Build for the installed Talon version. Support for older Talon versions,
+  legacy data formats, or parallel old/new code paths needs the owner's
+  approval first.
+- Keep the change within the task. Record unrelated findings as separate
+  `.scratch/` follow-ups.
+- Test sparingly and at the feature level. A good test drives a whole user
+  flow through the real modules, the way `test/test_windows_dictation_pedal.py`
+  runs a pedal press through the watcher and the pause toggle. Add one when it
+  protects behavior that could credibly regress, and check that it fails
+  without the fix. One flow-level test beats several tests of small helpers.
+  Behavior only Talon can exercise gets a live check instead (see
+  Verification).
+
 ## Repository boundaries
 
 The owner's personal Talon user file set: a fork (`origin`,

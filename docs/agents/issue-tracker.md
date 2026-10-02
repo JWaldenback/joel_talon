@@ -19,9 +19,12 @@ records with the work checkpoint when commit/push ownership is assigned.
   claim, and add a concise result pointer to the map. Update newly unblocked work.
 
 Keep `Decisions so far` and `Authorizations and deferrals` sections in the map.
-Follow `instructions/records.md` in the shared dotagents checkout for their
-contents, authority boundaries, consolidation, and handoffs. That document owns
-the shared recordkeeping rules; this file owns their project location.
+A decision entry gives the date, who decided (owner or agent), the reason, and
+the practical consequence; skip ordinary coding details. An authorization
+entry quotes or cites the owner's instruction and states the permitted action,
+its scope, limits, and when it ends; with no stated end it lasts for the
+original task only. Read both sections when starting or resuming, and mark
+superseded entries rather than deleting them.
 
 ## States and dependencies
 
