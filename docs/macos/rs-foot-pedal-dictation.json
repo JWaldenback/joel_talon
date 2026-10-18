@@ -12,6 +12,11 @@
                   "is_keyboard": true,
                   "product_id": 660,
                   "vendor_id": 1972
+                },
+                {
+                  "is_keyboard": true,
+                  "product_id": 660,
+                  "vendor_id": 13218
                 }
               ],
               "type": "device_if"

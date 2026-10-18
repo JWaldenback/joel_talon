@@ -134,19 +134,16 @@ pedal, sending the native Dictation key directly:
 { "consumer_key_code": "dictation", "repeat": false }
 ```
 
-The working device reports:
+The rule covers both observed RS Series keyboard interfaces:
 
-| Field | Value |
-| --- | --- |
-| Manufacturer | OLYMPUS CORPORATION |
-| Product | HID FootSwitch RS Series |
-| Vendor ID | `1972` / `0x07B4` |
-| Product ID | `660` / `0x0294` |
-| Interface | Keyboard |
+| Manufacturer | Vendor ID | Product ID | Interface |
+| --- | --- | --- | --- |
+| OLYMPUS CORPORATION | `1972` / `0x07B4` | `660` / `0x0294` | Keyboard |
+| OM digital solutions | `13218` / `0x33A2` | `660` / `0x0294` | Keyboard |
 
-The filter matches this model, not a unique serial number. Another pedal of the
-same model would also match. For different hardware, inspect its identifiers
-in Karabiner's Devices/EventViewer and update the rule.
+The filter matches either vendor and product pair, not a unique serial number.
+Another pedal with either pair would also match. For different hardware, inspect
+its identifiers in Karabiner's Devices/EventViewer and update the rule.
 
 Copy the included [rule file](rs-foot-pedal-dictation.json) into Karabiner's
 rule library:
