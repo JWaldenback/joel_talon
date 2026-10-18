@@ -11,6 +11,7 @@ required keys are `name`, `display`, and `processes` (lowercase exe names).
 
 from talon import Module, actions, app, cron, scope, settings
 
+from . import dictation_timing
 from .mic_and_eye_tracker_state_log import log as _state_log
 
 mod = Module()
@@ -116,10 +117,18 @@ def _any_service_active() -> bool:
     return any(s["active"] for s in _service_state.values())
 
 
+def _timing_fields(name: str) -> dict:
+    """Latency since the Win+H press that led to this open/close."""
+    if name != "win_h_dictation":
+        return {}
+    return {"since_win_h_ms": dictation_timing.on_dictation_transition()}
+
+
 def _activate(name: str):
     service = _service_by_name(name)
     if service is None:
         return
+    timing = _timing_fields(name)
     was_any_active = _any_service_active()
     _service_state[name]["active"] = True
     # Only take global pause actions on the first service to go active.
@@ -165,11 +174,13 @@ def _activate(name: str):
         was_sleeping=was_sleeping,
         toggle_holds_pause=toggle_holds_pause,
         saved_mic=saved_mic,
+        **timing,
     )
     app.notify(f"Talon paused: {service['display']} active")
 
 
 def _deactivate(name: str):
+    timing = _timing_fields(name)
     service = _service_by_name(name)
     _service_state[name]["active"] = False
     _service_state[name]["disabled_by_us"] = False
@@ -188,6 +199,7 @@ def _deactivate(name: str):
             service=name,
             still_active=[n for n, st in _service_state.items() if st["active"]],
             restored=False,
+            **timing,
         )
         return
     restored_mic = _global["previous_microphone"] if _global["speech_disabled_by_us"] else None
@@ -214,12 +226,14 @@ def _deactivate(name: str):
         restored=True,
         restored_mic=restored_mic,
         woke_mouse=woke_mouse,
+        **timing,
     )
     if service is not None:
         app.notify(f"Talon resumed: {service['display']} closed")
 
 
 def _tick():
+    dictation_timing.on_watcher_tick(int(settings.get("user.mic_capture_poll_ms")))
     observed_names = _services_active()
     _suppressed_until_inactive.intersection_update(observed_names)
     active_names = observed_names - _suppressed_until_inactive

@@ -48,6 +48,18 @@ settings():
     user.mic_capture_watch_enabled = 0
 ```
 
+On Windows, [`dictation_timing.py`](dictation_timing.py) also logs each
+Win+H press and how long voice typing takes to open (`win_h_pressed`,
+`since_win_h_ms`, `win_h_unanswered`, `watcher_tick_gap`) to
+`mic_and_eye_tracker_state.log`, for diagnosing slow pedal starts. It
+installs the low-level keyboard hook from [`voice_dictation_resume.py`](voice_dictation_resume.py)
+at startup. To turn it off:
+
+```
+settings():
+    user.dictation_timing_log_enabled = 0
+```
+
 Voice commands for debugging (`mic watch start/stop`, `mic check now`,
 `mic dump sessions`) are commented out in
 [`mic_capture_watcher.talon`](mic_capture_watcher.talon) — uncomment if needed.

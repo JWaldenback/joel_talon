@@ -15,6 +15,9 @@ Flow:
      and whenever the mic_capture_watcher observes the pill closing —
      so paths that didn't go through "start listening" (e.g. talon
      sleep then manual Win+H) are unaffected.
+
+The same hook also feeds dictation_timing.py (Win+H press timestamps). When
+that log is enabled the hook is installed at startup instead of lazily.
 """
 
 import ctypes
@@ -23,15 +26,21 @@ import threading
 
 from talon import Module, actions, app, cron
 
+from . import dictation_timing
+
 mod = Module()
 
 WH_KEYBOARD_LL = 13
 WM_KEYDOWN = 0x0100
 WM_SYSKEYDOWN = 0x0104
+WM_KEYUP = 0x0101
+WM_SYSKEYUP = 0x0105
 WM_QUIT = 0x0012
 LLKHF_INJECTED = 0x10
 LLKHF_LOWER_IL_INJECTED = 0x02
 VK_DIVIDE = 0x6F
+VK_LWIN = 0x5B
+VK_RWIN = 0x5C
 
 LowLevelKeyboardProc = getattr(ctypes, "WINFUNCTYPE", ctypes.CFUNCTYPE)(
     ctypes.c_long, ctypes.c_int, wt.WPARAM, wt.LPARAM
@@ -66,6 +75,13 @@ if _user32 is not None:
     _user32.PostThreadMessageW.argtypes = [
         wt.DWORD, wt.UINT, wt.WPARAM, wt.LPARAM,
     ]
+    _user32.GetAsyncKeyState.restype = ctypes.c_short
+    _user32.GetAsyncKeyState.argtypes = [ctypes.c_int]
+    _kernel32.GetTickCount.restype = wt.DWORD
+    # Without an explicit restype ctypes truncates the 64-bit module handle
+    # to a C int, and SetWindowsHookExW then fails with error 126.
+    _kernel32.GetModuleHandleW.restype = wt.HMODULE
+    _kernel32.GetModuleHandleW.argtypes = [wt.LPCWSTR]
 
 
 _state = {
@@ -113,15 +129,35 @@ def _close_pill_if_still_active():
         print(f"[voice_dictation_resume] late super-h failed: {e}")
 
 
+def _record_timing(kbd, is_down: bool, injected: bool):
+    # Windows waits for every low-level hook before delivering a key, so keep
+    # this cheap: dictation_timing only filters and enqueues.
+    try:
+        win_down = False
+        hook_delay_ms = 0
+        if is_down and kbd.vkCode == dictation_timing.VK_H:
+            win_down = bool(
+                (_user32.GetAsyncKeyState(VK_LWIN) | _user32.GetAsyncKeyState(VK_RWIN))
+                & 0x8000
+            )
+            # kbd.time is the event's GetTickCount timestamp; the difference
+            # is how long the key waited before reaching this hook.
+            hook_delay_ms = (_kernel32.GetTickCount() - kbd.time) & 0xFFFFFFFF
+        dictation_timing.on_hook_key(kbd.vkCode, is_down, win_down, injected, hook_delay_ms)
+    except Exception:
+        pass
+
+
 def _hook_proc(nCode, wParam, lParam):
-    if nCode == 0 and wParam in (WM_KEYDOWN, WM_SYSKEYDOWN):
-        if _state["armed"]:
-            kbd = ctypes.cast(lParam, ctypes.POINTER(KBDLLHOOKSTRUCT))[0]
-            injected = bool(kbd.flags & (LLKHF_INJECTED | LLKHF_LOWER_IL_INJECTED))
-            # The divide pedal has its own Dictation recovery path. Do not
-            # queue the generic keypress recovery for that same key event.
-            if not injected and kbd.vkCode != VK_DIVIDE:
-                cron.after("0ms", _resume_on_main)
+    if nCode == 0 and wParam in (WM_KEYDOWN, WM_SYSKEYDOWN, WM_KEYUP, WM_SYSKEYUP):
+        kbd = ctypes.cast(lParam, ctypes.POINTER(KBDLLHOOKSTRUCT))[0]
+        is_down = wParam in (WM_KEYDOWN, WM_SYSKEYDOWN)
+        injected = bool(kbd.flags & (LLKHF_INJECTED | LLKHF_LOWER_IL_INJECTED))
+        _record_timing(kbd, is_down, injected)
+        # The divide pedal has its own Dictation recovery path. Do not
+        # queue the generic keypress recovery for that same key event.
+        if is_down and _state["armed"] and not injected and kbd.vkCode != VK_DIVIDE:
+            cron.after("0ms", _resume_on_main)
     return _user32.CallNextHookEx(_state["hook"] or 0, nCode, wParam, lParam)
 
 
@@ -145,14 +181,27 @@ def _hook_thread():
     _state["hook"] = None
 
 
+_HOOK_THREAD_NAME = "voice_dictation_resume_hook"
+
+
+def _stop_stale_hook_threads():
+    # Talon reloads re-run this module but leave the previous module's hook
+    # thread running (user threads have no autoreload support). Quit those
+    # so a reload doesn't leave duplicate hooks double-logging every key.
+    for t in threading.enumerate():
+        if t.name == _HOOK_THREAD_NAME and t is not _state["thread"] and t.native_id:
+            _user32.PostThreadMessageW(t.native_id, WM_QUIT, 0, 0)
+
+
 def _ensure_hook_running():
     if app.platform != "windows":
         return
     t = _state["thread"]
     if t is not None and t.is_alive():
         return
+    _stop_stale_hook_threads()
     t = threading.Thread(
-        target=_hook_thread, daemon=True, name="voice_dictation_resume_hook"
+        target=_hook_thread, daemon=True, name=_HOOK_THREAD_NAME
     )
     _state["thread"] = t
     t.start()
@@ -166,6 +215,16 @@ def _shutdown(*_):
 
 
 app.register("shutdown", _shutdown)
+
+
+def _on_ready():
+    if dictation_timing.enabled():
+        _ensure_hook_running()
+
+
+# Registered after dictation_timing's own ready handler (imported above), so
+# its setting has been applied by the time this runs.
+app.register("ready", _on_ready)
 
 
 @mod.action_class

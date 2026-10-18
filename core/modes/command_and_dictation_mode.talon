@@ -4,6 +4,7 @@ mode: dictation
 
 ^dictation mode$: user.dictation_mode()
 ^(command mode | come on mode)$: user.command_mode()
+^mixed mode$: user.mixed_mode()
 
 #^dictation mode$:
 #    mode.disable("sleep")
