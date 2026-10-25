@@ -25,6 +25,9 @@ fallback to Windows dictation.
 
 ## Select the provider
 
+For repo-owned runnable controls and a repeatable Desktop/startup installer,
+see the [Windows tools catalog](../../tools/windows/README.md).
+
 On this Windows machine, double-click **Talon - Use Wispr.cmd** or
 **Talon - Use Windows Dictation.cmd** on the Desktop. **Talon - Dictation
 Status.cmd** shows the saved choice. The accompanying **Dictation provider

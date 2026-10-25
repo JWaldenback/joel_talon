@@ -2,6 +2,9 @@
 
 Voice command set for [Talon](https://talonvoice.com/), community-supported.
 
+For this fork's runnable Windows helpers and new-PC setup, see
+[Personal Windows tools](tools/windows/README.md).
+
 _(Originally called `knausj_talon`, after [its original creator :superhero:](https://github.com/knausj85))_
 
 Can be used on its own, but shines when combined with:
