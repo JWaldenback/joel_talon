@@ -33,6 +33,13 @@ CAPTURE_SERVICES = [
         "display": "Super Whisper",
         "processes": {"superwhisper.exe"},
     },
+    {
+        "name": "wispr_flow",
+        "display": "Wispr Flow",
+        # Flow's Electron audio utility and native helper use these names.
+        # Only active capture sessions count, not the always-running app.
+        "processes": {"wispr flow.exe", "wispr flow helper.exe"},
+    },
 ]
 
 
@@ -364,20 +371,27 @@ def mark_disabled_by_us(name: str):
 @mod.action_class
 class Actions:
     def windows_dictation_pedal_recover() -> bool:
-        """Close active Windows voice typing and release its watcher pause."""
+        """Cancel Windows voice typing or Wispr and release its watcher pause."""
         if app.platform != "windows":
             return False
-        name = "win_h_dictation"
-        if not _service_state[name]["active"] and name not in _services_active():
+        # Query audio as well as cached state so a pedal press still recovers
+        # a recording that began just before the next watcher tick.
+        observed = _services_active()
+        names = [
+            name for name in ("win_h_dictation", "wispr_flow")
+            if _service_state[name]["active"] or name in observed
+        ]
+        if not names:
             return False
-        # Escape closes the voice-typing pill without toggling Win+H back on.
-        # Disarm the keypress hook before it can schedule its own close.
+        # Both providers cancel with Escape. Disarm the native keypress hook
+        # before it can schedule another close, then ignore lingering audio.
         actions.user.voice_dictation_disarm_keypress_resume()
         actions.key("escape")
-        _suppressed_until_inactive.add(name)
-        if _service_state[name]["active"]:
-            _deactivate(name)
-        _state_log("dictation_pedal_recovery", source="mic_capture_watcher", service=name)
+        _suppressed_until_inactive.update(names)
+        for name in names:
+            if _service_state[name]["active"]:
+                _deactivate(name)
+            _state_log("dictation_pedal_recovery", source="mic_capture_watcher", service=name)
         return True
 
     def mic_capture_start_watch():

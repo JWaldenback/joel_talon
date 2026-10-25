@@ -1,107 +1,114 @@
-; Double-tap either Control key to start Windows voice typing.
-;
-; AutoHotkey v1.1. Run this script instead of double_tap_altgr.ahk if you
-; want Control to be the dictation shortcut. Both scripts can also run together.
-; Normal Control presses and shortcuts pass through unchanged.
-;
-; To disable: close it from the tray, and remove its shortcut from shell:startup.
+; Windows dictation provider shortcuts, independent of Talon.
+; The existing Windows startup shortcut runs this repo-owned script.
+; Win+H and double left Alt use the saved provider; double Control stays native.
+; Run docs/windows/dictation-provider.ps1 to select wispr or windows.
 
 #NoEnv
 #SingleInstance Force
 #InstallKeybdHook
+; The default Ctrl menu mask also matches Flow's Ctrl+Win push-to-talk.
+; Use an unassigned key to suppress Start/menu activation without recording.
+#MenuMaskKey vkE8
+#Include %A_ScriptDir%\dictation_taps.ahk
 SendMode Input
 SetBatchLines -1
 
-; Maximum gap between taps and maximum length of each tap, in milliseconds.
-DOUBLE_TAP_MS := 400
-MAX_HOLD_MS := 500
+PROVIDER_FILE := A_AppData . "\TalonDictation\provider.txt"
+taps := new DictationTaps()
 
-; Win+H opens Windows voice typing.
-TRIGGER := "#h"
-
-; Log key events to %TEMP%\double_tap_control.log and beep on a double-tap.
-DEBUG := false
-LOG_FILE := A_Temp . "\double_tap_control.log"
-
-controlDownTime := 0
-controlKey := 0
-comboUsed := false
-lastTapTime := 0
-
-; Observe key-down events without suppressing them. This distinguishes a tap
-; from Control held for another key and from the synthetic left Control that
-; Windows sends with AltGr on some keyboard layouts.
-ih := InputHook("V")
+; Only observe key-down events here. The up hotkeys below handle dispatch.
+; I1 ignores this script's level-zero SendEvent output as well as SendInput,
+; preventing the paced Wispr chord from entering the modifier-tap detector.
+; L0 disables text collection; only key notifications are needed.
+ih := InputHook("V I1 L0")
 ih.KeyOpt("{All}", "N")
 ih.OnKeyDown := Func("WatchKey")
 ih.Start()
 return
 
-Log(msg) {
-    global DEBUG, LOG_FILE
-    if (DEBUG) {
-        FormatTime, ts,, HH:mm:ss
-        FileAppend, %ts% %msg%`n, %LOG_FILE%
-    }
+WatchKey(ih, vk, sc) {
+    global taps
+    ; The hook reports sided modifiers. Ignore their generic counterparts.
+    if (vk = 0x11 || vk = 0x12)
+        return
+    taps.Down(vk, A_TickCount, OtherModifierHeld(vk))
 }
 
-WatchKey(ih, VK, SC) {
-    global controlDownTime, controlKey, comboUsed
-
-    if (VK = 0xA2 || VK = 0xA3) {  ; left or right Control
-        if (!controlDownTime) {
-            controlDownTime := A_TickCount
-            controlKey := VK
-            comboUsed := GetKeyState("RAlt", "P")
-            Log("Control down VK=" . VK)
-        } else if (VK != controlKey) {
-            comboUsed := true  ; both Control keys held together
-        }
-        return
+OtherModifierHeld(vk) {
+    for _, key in [0xA0, 0xA1, 0xA2, 0xA3, 0xA4, 0xA5, 0x5B, 0x5C] {
+        if (key != vk && GetKeyState(Format("vk{:X}", key), "P"))
+            return true
     }
-
-    ; Ignore the generic Control event, but count every other key (including
-    ; AltGr/RAlt) pressed while Control is physically held as a shortcut.
-    if (VK != 0x11 && (GetKeyState("LControl", "P") || GetKeyState("RControl", "P"))) {
-        comboUsed := true
-        Log("  combo key VK=" . VK)
-    }
+    return false
 }
 
 ~*LControl up::
-    HandleControlUp(0xA2)
+    if (taps.Up(0xA2, A_TickCount, OtherModifierHeld(0xA2)))
+        SendInput, #h
 return
 
 ~*RControl up::
-    HandleControlUp(0xA3)
+    if (taps.Up(0xA3, A_TickCount, OtherModifierHeld(0xA3)))
+        SendInput, #h
 return
 
-HandleControlUp(VK) {
-    global controlDownTime, controlKey, comboUsed, lastTapTime
-    global DOUBLE_TAP_MS, MAX_HOLD_MS, TRIGGER, DEBUG
+; An up-only suppressing hotkey also suppresses its unmatched down event.
+; Explicitly pass down through so InputHook sees the first edge of each tap
+; and ordinary Alt combinations still reach the foreground application.
+~*LAlt::
+return
 
-    if (VK != controlKey)
-        return
+$*LAlt up::
+    ; Pass Alt combinations through, but prevent isolated left Alt taps
+    ; from opening an application's menu before the dictation shortcut.
+    ; Right Alt/AltGr is never intercepted.
+    if (taps.keys[0xA4].down && !taps.keys[0xA4].used)
+        SendInput, {Blind}{vkE8}{LAlt up}
+    else
+        SendInput, {Blind}{LAlt up}
+    if (taps.Up(0xA4, A_TickCount, OtherModifierHeld(0xA4)))
+        ToggleSelectedProvider()
+return
 
-    held := controlDownTime ? A_TickCount - controlDownTime : 0
-    gap := A_TickCount - lastTapTime
-    wasCombo := comboUsed || GetKeyState("RAlt", "P")
-    controlDownTime := 0
-    controlKey := 0
-    comboUsed := false
-    Log("Control up VK=" . VK . " held=" . held . "ms gap=" . gap . "ms combo=" . wasCombo)
+; The pedal sends physical Win+H. Leave Talon's injected native-dictation
+; voice commands alone. The $ hook also keeps our native SendInput from
+; re-entering this hotkey. Wait for release so a held pedal toggles once.
+#If GetKeyState("LWin", "P") || GetKeyState("RWin", "P")
+$#h::
+    KeyWait, h
+    KeyWait, LWin
+    KeyWait, RWin
+    ToggleSelectedProvider()
+return
+#If
 
-    if (wasCombo || held > MAX_HOLD_MS) {
-        lastTapTime := 0
-        return
-    }
-    if (gap <= DOUBLE_TAP_MS) {
-        lastTapTime := 0
-        Log("  double tap: sending " . TRIGGER)
-        if (DEBUG)
-            SoundBeep, 1200, 120
-        Send, %TRIGGER%
+ToggleSelectedProvider() {
+    global PROVIDER_FILE
+    if (!FileExist(PROVIDER_FILE)) {
+        provider := "windows"
     } else {
-        lastTapTime := A_TickCount
+        FileRead, provider, %PROVIDER_FILE%
+        if (ErrorLevel) {
+            TrayTip, Dictation unavailable, Cannot read the saved provider., 5, 2
+            return
+        }
+        provider := Trim(provider, " `t`r`n")
+    }
+    if (provider = "windows") {
+        SendInput, #h
+    } else if (provider = "wispr") {
+        Process, Exist, Wispr Flow.exe
+        if (!ErrorLevel) {
+            TrayTip, Dictation unavailable, Open Wispr Flow and try again., 5, 2
+            return
+        }
+        ; Pace the full hands-free combination so Space is held alongside
+        ; both modifiers before any of them are released. The vkE8 menu mask
+        ; above prevents extra Ctrl+Win presses around this intended chord.
+        ; Flow itself owns the recording state for the start/finish toggle.
+        SetKeyDelay, 30, 30
+        SendEvent, {LControl down}{LWin down}{Space down}{Space up}{LWin up}{LControl up}
+    } else {
+        TrayTip, Dictation unavailable, Select wispr or windows with the provider selector., 5, 2
     }
 }

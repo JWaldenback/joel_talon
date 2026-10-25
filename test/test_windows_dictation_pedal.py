@@ -8,11 +8,26 @@ if hasattr(talon, "test_mode"):
 
     import pytest
 
-    @pytest.mark.parametrize("pause_kind, other_capture", [
-        ("watcher", False), ("manual", False),
-        ("voice_command", False), ("watcher", True),
-    ])
-    def test_divide_closes_windows_dictation_and_restores_talon(monkeypatch, pause_kind, other_capture):
+    @pytest.mark.parametrize(
+        "service, process",
+        [
+            ("win_h_dictation", "TextInputHost.exe"),
+            ("wispr_flow", "Wispr Flow.exe"),
+            ("wispr_flow", "Wispr Flow Helper.exe"),
+        ],
+    )
+    @pytest.mark.parametrize(
+        "pause_kind, other_capture",
+        [
+            ("watcher", False),
+            ("manual", False),
+            ("voice_command", False),
+            ("watcher", True),
+        ],
+    )
+    def test_divide_closes_windows_dictation_and_restores_talon(
+        monkeypatch, pause_kind, other_capture, service, process
+    ):
         state = {
             "mic": "Yeti",
             "speech": True,
@@ -36,13 +51,17 @@ if hasattr(talon, "test_mode"):
         fake_talon = ModuleType("talon")
         fake_talon.Module = Module
         fake_talon.Context = Context
-        fake_talon.imgui = SimpleNamespace(open=lambda **kwargs: lambda f: f, GUI=object)
+        fake_talon.imgui = SimpleNamespace(
+            open=lambda **kwargs: lambda f: f, GUI=object
+        )
         fake_talon.ui = SimpleNamespace()
-        fake_talon.app = SimpleNamespace(platform="windows", register=lambda *a: None,
-                                         notify=lambda *a: None)
+        fake_talon.app = SimpleNamespace(
+            platform="windows", register=lambda *a: None, notify=lambda *a: None
+        )
         fake_talon.cron = SimpleNamespace(cancel=lambda *a: None)
-        fake_talon.settings = SimpleNamespace(get=lambda *a: 300,
-                                               register=lambda *a: None)
+        fake_talon.settings = SimpleNamespace(
+            get=lambda *a: 300, register=lambda *a: None
+        )
         fake_talon.scope = SimpleNamespace(get=lambda *a: set())
         fake_talon.actions = SimpleNamespace(
             key=state["keys"].append,
@@ -52,9 +71,11 @@ if hasattr(talon, "test_mode"):
                 enabled=lambda: state["speech"],
                 enable=lambda: state.update(speech=True),
             ),
-            tracking=SimpleNamespace(control_enabled=lambda: True,
-                                     control_zoom_enabled=lambda: True,
-                                     control1_enabled=lambda: True),
+            tracking=SimpleNamespace(
+                control_enabled=lambda: True,
+                control_zoom_enabled=lambda: True,
+                control1_enabled=lambda: True,
+            ),
             user=SimpleNamespace(
                 mouse_sleep=state["owners"].add,
                 mouse_wake=state["owners"].discard,
@@ -65,8 +86,11 @@ if hasattr(talon, "test_mode"):
         )
         monkeypatch.setitem(sys.modules, "talon", fake_talon)
         prefix = "plugin.mic_capture_watcher"
-        monkeypatch.setitem(sys.modules, prefix + ".mic_and_eye_tracker_state_log",
-                            SimpleNamespace(log=lambda *a, **kw: None))
+        monkeypatch.setitem(
+            sys.modules,
+            prefix + ".mic_and_eye_tracker_state_log",
+            SimpleNamespace(log=lambda *a, **kw: None),
+        )
         root = Path(__file__).parents[1]
 
         def load(name, path):
@@ -75,19 +99,33 @@ if hasattr(talon, "test_mode"):
             spec.loader.exec_module(module)
             return module
 
-        watcher = load(prefix + ".windows_pedal_test",
-                       "plugin/mic_capture_watcher/mic_capture_watcher.py")
-        toggle = load("windows_pedal_toggle_test",
-                      "core/my_customizations/my_customizations.py")
-        def active_services():
-            active = set()
-            if state["recording"]:
-                active.add("win_h_dictation")
-            if state["other_recording"]:
-                active.add("super_whisper")
-            return active
+        watcher = load(
+            prefix + ".windows_pedal_test",
+            "plugin/mic_capture_watcher/mic_capture_watcher.py",
+        )
+        toggle = load(
+            "windows_pedal_toggle_test", "core/my_customizations/my_customizations.py"
+        )
 
-        monkeypatch.setattr(watcher, "_services_active", active_services)
+        def capture_sessions():
+            sessions = []
+            if state["recording"]:
+                sessions.append((123, process, 1))
+            if state["other_recording"]:
+                sessions.append((456, "superwhisper.exe", 1))
+            # A running Flow app with an inactive capture session must not
+            # keep Talon paused after recording ends.
+            sessions.append((789, "Wispr Flow.exe", 0))
+            return sessions
+
+        monkeypatch.setattr(
+            watcher,
+            "_import_monitor",
+            lambda: (
+                SimpleNamespace(list_active_capture_sessions=capture_sessions),
+                None,
+            ),
+        )
         fake_talon.actions.user.windows_dictation_pedal_recover = (
             watcher.Actions.windows_dictation_pedal_recover
         )
@@ -106,14 +144,30 @@ if hasattr(talon, "test_mode"):
         state["recording"] = True
         watcher._tick()
         assert state["mic"] == "None"
-        assert watcher.is_service_active("win_h_dictation")
+        assert watcher.is_service_active(service)
+
+        if not other_capture:
+            # Exercise a normal recording finish before pedal recovery.
+            # A manual pause must survive; an automatic pause must release.
+            state["recording"] = False
+            watcher._tick()
+            assert not watcher.is_service_active(service)
+            if pause_kind == "manual":
+                assert state["mic"] == "None"
+                assert state["owners"] == {"toggle"}
+            else:
+                assert state["mic"] == "Yeti"
+                assert "watcher" not in state["owners"]
+            state["recording"] = True
+            watcher._tick()
+            assert state["mic"] == "None"
 
         # A voice-command handoff can also disable Talon's speech engine.
         if not other_capture:
             state["speech"] = False
         toggle.UserActions.toggle_talon_sleep()
         assert state["keys"] == ["escape"]
-        assert not watcher.is_service_active("win_h_dictation")
+        assert not watcher.is_service_active(service)
         if other_capture:
             assert state["mic"] == "None"
             assert state["owners"] == {"watcher"}
@@ -139,4 +193,4 @@ if hasattr(talon, "test_mode"):
         state["recording"] = True
         watcher._tick()
         assert state["mic"] == "None"
-        assert watcher.is_service_active("win_h_dictation")
+        assert watcher.is_service_active(service)

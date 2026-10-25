@@ -35,6 +35,11 @@ Talon. Native-dictation voice entry points continue to target Apple Dictation.
 
 On Windows, it needs the `comtypes` package, which is not bundled with Talon.
 
+Windows also recognises Wispr Flow's active recording sessions. The
+[Windows provider setup](../../docs/windows/dictation-providers.md) routes the
+Win+H pedal and double left Alt through a repo-owned AutoHotkey startup script.
+Double Control stays native. This route works with Talon closed.
+
 Run `install_deps.bat` once after cloning (right-click → "Run as administrator"
 since Talon lives under `C:\Program Files`).
 
@@ -97,7 +102,7 @@ processes with an active capture session. When any registered service
 matches, Talon's speech engine is disabled and the mouse is slept (so
 gaze/head tracking stops moving the cursor while you dictate elsewhere).
 When all services go inactive, both are restored.
-On Windows, keypad divide closes active voice typing with Escape and resumes
+On Windows, keypad divide cancels active voice typing or Wispr with Escape and resumes
 Talon, including a pedal pause or the gaze pause held by **start listening**.
 The watcher ignores the closing audio session until it stops recording. If
 another capture service is active, Talon stays paused for that service.

@@ -2,9 +2,12 @@ import talon
 
 if hasattr(talon, "test_mode"):
     import json
+    import os
     import subprocess
     import sys
     from pathlib import Path
+
+    import pytest
 
     SCRIPT = Path(__file__).parents[1] / "docs/macos/dictation-provider"
 
@@ -80,3 +83,44 @@ if hasattr(talon, "test_mode"):
         assert result.returncode != 0
         assert config.read_text() == "{not-json"
         assert not config.with_name("karabiner.json.before-dictation-provider").exists()
+
+    @pytest.mark.skipif(sys.platform != "win32", reason="Windows PowerShell selector")
+    def test_windows_selection_persists_and_rejects_invalid_state(tmp_path):
+        # Run the real standalone entry point with isolated machine-local
+        # storage. This catches PowerShell/AutoHotkey file-format mismatches
+        # without changing this machine's selected provider.
+        script = Path(__file__).parents[1] / "docs/windows/dictation-provider.ps1"
+
+        def select(provider):
+            return subprocess.run(
+                [
+                    "powershell.exe",
+                    "-NoProfile",
+                    "-ExecutionPolicy",
+                    "Bypass",
+                    "-File",
+                    str(script),
+                    provider,
+                ],
+                env={**os.environ, "APPDATA": str(tmp_path)},
+                capture_output=True,
+                text=True,
+                creationflags=subprocess.CREATE_NO_WINDOW,
+            )
+
+        assert select("status").stdout.strip() == "windows"
+        for provider in ("wispr", "windows", "wispr"):
+            result = select(provider)
+            assert result.returncode == 0, result.stderr
+            assert select("status").stdout.strip() == provider
+            assert (tmp_path / "TalonDictation/provider.txt").read_bytes() == (
+                provider + "\n"
+            ).encode("ascii")
+
+        config = tmp_path / "TalonDictation/provider.txt"
+        result = select("unknown")
+        assert result.returncode != 0
+        assert config.read_text().strip() == "wispr"
+        config.write_text("invalid")
+        assert select("status").returncode != 0
+        assert config.read_text() == "invalid"
