@@ -1,35 +1,20 @@
 # Project settings
 
-## Decisions and models
+Explicit task instructions override these project defaults.
 
-Decision policy: agent-led.
-Model research: on-demand.
-Model evidence maximum age: 14 days.
+## Everyday work
 
-Explicit task choices override these defaults. Record effort-specific model
-pairings and authorizations in the tracker. Add standing model preferences only
-when the owner has supplied them.
-
-## Working rules
-
-- Start from the latest commit: `git pull --ff-only`, merging when it cannot
-  fast-forward (owner rule below).
-- Agent-led means: make routine implementation and design choices yourself
-  and record significant ones in the effort record. Ask the owner before
-  anything hard to reverse, outside the agreed scope, or contradicting a
-  stated requirement.
+- Make routine implementation and design choices yourself. Record significant
+  decisions briefly. Ask the owner before anything hard to reverse, outside the
+  agreed scope, or contradicting a stated requirement.
+- At the start of implementation, run `git pull --ff-only`, preserving local
+  work. Handle divergence under the merge rule below. Read-only advice does
+  not require a pull; continuing the same effort does not require one every turn.
 - Build for the installed Talon version. Support for older Talon versions,
   legacy data formats, or parallel old/new code paths needs the owner's
   approval first.
-- Keep the change within the task. Record unrelated findings as separate
-  `.scratch/` follow-ups.
-- Test sparingly and at the feature level. A good test drives a whole user
-  flow through the real modules, the way `test/test_windows_dictation_pedal.py`
-  runs a pedal press through the watcher and the pause toggle. Add one when it
-  protects behavior that could credibly regress, and check that it fails
-  without the fix. One flow-level test beats several tests of small helpers.
-  Behavior only Talon can exercise gets a live check instead (see
-  Verification).
+- Keep the change within the task. Record actionable unrelated findings as
+  brief `.scratch/` follow-ups rather than expanding the current change.
 
 ## Repository boundaries
 
@@ -73,6 +58,12 @@ Talon 1.0 gotchas:
 
 ## Verification
 
+Match verification to the change. Prefer feature-level checks through real
+modules, such as `test/test_windows_dictation_pedal.py`. Add tests for credible
+regressions and check that bug regression tests fail without the fix. Use live
+checks for behavior only Talon can exercise. Documentation-only edits need a
+diff and link check, not a rerun of unchanged runtime tests.
+
 - Tests: `python -m pytest` from the repository root. pytest is not installed
   globally on the Windows host; use a throwaway virtual environment with
   `requirements-dev.txt`.
@@ -89,18 +80,13 @@ Talon 1.0 gotchas:
   - Pedal, dictation, and eye-tracker behavior needs the owner's physical
     input to confirm.
 
-## Release and external actions
-
-No release process. Publishing is a push to `origin`, governed by the push
-rule below.
-
 ## Current owner decisions
 
-Standing owner rules (moved from `CLAUDE.md` on 2026-10-02):
+Publishing is a push to `origin`. These standing owner rules apply:
 
 - **Merge, never rebase**, when pulling from upstream or integrating parallel
   work: `git merge upstream/main` (or equivalent), accepting the merge commit.
-  When the shared base's `git pull --ff-only` cannot fast-forward, merge.
+  When `git pull --ff-only` cannot fast-forward, merge.
   Rationale: individual commits stay distinct in the history, and no SHA
   rewrite forces a force-push.
 - **Ask before every push.** Stop once the commit lands locally and get
