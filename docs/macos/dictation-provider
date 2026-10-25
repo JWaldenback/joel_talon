@@ -1,0 +1,185 @@
+#!/usr/bin/env python3
+"""Select the Mac dictation provider in Karabiner, independently of Talon."""
+
+import argparse
+import json
+import os
+import subprocess
+import tempfile
+from pathlib import Path
+
+RULE_PREFIX = "Selected dictation provider: "
+OLD_RULE = "RS foot pedal: Windows-H sends Apple Dictation key"
+TAP_VARIABLE = "joel_dictation_left_alt_expiration"
+CLI = "/Library/Application Support/org.pqrs/Karabiner-Elements/bin/karabiner_cli"
+
+
+def provider_events(provider):
+    if provider == "macos":
+        # Keep the physically verified Dictation HID event. Synthesizing two
+        # Control presses did not work reliably with this pedal on this Mac.
+        return [{"consumer_key_code": "dictation", "repeat": False}]
+    return [
+        # Match Flow's default hands-free toggle so resetting Flow's shortcuts
+        # keeps the pedal and double left Option working without Command.
+        {"key_code": "spacebar", "modifiers": ["fn"], "repeat": False},
+        {
+            "shell_command": "/usr/bin/pgrep -x 'Wispr Flow' >/dev/null || /usr/bin/osascript -e 'display notification \"Open Wispr Flow and try again.\" with title \"Dictation unavailable\"'"
+        },
+    ]
+
+
+def provider_rule(provider):
+    reset = {"set_variable": {"name": TAP_VARIABLE, "value": 0}}
+    return {
+        "description": RULE_PREFIX + provider,
+        "manipulators": [
+            {
+                "type": "basic",
+                "from": {"key_code": "h", "modifiers": {"mandatory": ["command"]}},
+                "conditions": [
+                    {
+                        "type": "device_if",
+                        "identifiers": [
+                            {"vendor_id": 1972, "product_id": 660, "is_keyboard": True},
+                            {
+                                "vendor_id": 13218,
+                                "product_id": 660,
+                                "is_keyboard": True,
+                            },
+                        ],
+                    }
+                ],
+                "to": provider_events(provider),
+            },
+            {
+                "type": "basic",
+                "from": {"key_code": "left_option"},
+                "conditions": [
+                    {
+                        "type": "expression_if",
+                        "expression": TAP_VARIABLE + " > system.now.milliseconds",
+                    }
+                ],
+                # Modifier combinations still pass through. Only an isolated
+                # second tap starts dictation; holding Alt to type never does.
+                "to": [{"key_code": "left_option", "lazy": True}],
+                "to_if_alone": provider_events(provider) + [reset],
+                "parameters": {"basic.to_if_alone_timeout_milliseconds": 250},
+            },
+            {
+                "type": "basic",
+                "from": {"key_code": "left_option"},
+                "to": [{"key_code": "left_option", "lazy": True}],
+                "to_if_alone": [
+                    {
+                        "set_variable": {
+                            "name": TAP_VARIABLE,
+                            "expression": "system.now.milliseconds + 350",
+                        }
+                    }
+                ],
+                # An intervening key cancels the gesture. This also clears an
+                # old tap instead of treating Alt+letter, Alt as a double tap.
+                "to_delayed_action": {
+                    "to_if_invoked": [reset],
+                    "to_if_canceled": [reset],
+                },
+                "parameters": {
+                    "basic.to_if_alone_timeout_milliseconds": 250,
+                    "basic.to_delayed_action_delay_milliseconds": 500,
+                },
+            },
+        ],
+    }
+
+
+def selected_profile(config):
+    selected = [profile for profile in config["profiles"] if profile.get("selected")]
+    if len(selected) != 1:
+        raise ValueError("Select exactly one Karabiner profile first")
+    return selected[0]
+
+
+def current_provider(profile):
+    for rule in profile.get("complex_modifications", {}).get("rules", []):
+        description = rule.get("description", "")
+        if description.startswith(RULE_PREFIX):
+            return description[len(RULE_PREFIX) :]
+    return "not configured"
+
+
+def select_provider(path, provider):
+    original = path.read_bytes()
+    config = json.loads(original)
+    profile = selected_profile(config)
+    modifications = profile.setdefault("complex_modifications", {})
+    rules = modifications.setdefault("rules", [])
+    # Replace only our rules, including the installed direct-to-Apple pedal
+    # rule. Keep every unrelated profile, device mapping and shortcut intact.
+    indexes = [
+        i
+        for i, rule in enumerate(rules)
+        if rule.get("description", "").startswith(RULE_PREFIX)
+        or rule.get("description") == OLD_RULE
+    ]
+    insertion = indexes[0] if indexes else len(rules)
+    rules[:] = [rule for i, rule in enumerate(rules) if i not in indexes]
+    rules.insert(insertion, provider_rule(provider))
+    encoded = (json.dumps(config, indent=4) + "\n").encode()
+    # One pre-install snapshot is enough to undo this setup. Keeping the file
+    # beside the profile also avoids placing a backup in Talon's live tree.
+    backup = path.with_name(path.name + ".before-dictation-provider")
+    if not backup.exists():
+        with backup.open("xb") as output:
+            os.chmod(backup, path.stat().st_mode & 0o777)
+            output.write(original)
+    temp_name = None
+    try:
+        with tempfile.NamedTemporaryFile(
+            dir=path.parent, prefix=".dictation-", delete=False
+        ) as output:
+            temp_name = output.name
+            os.chmod(temp_name, path.stat().st_mode & 0o777)
+            output.write(encoded)
+            output.flush()
+            os.fsync(output.fileno())
+        # Refuse to overwrite a profile saved by the app during our edit.
+        if path.read_bytes() != original:
+            raise ValueError("Karabiner settings changed; run the selector again")
+        os.replace(temp_name, path)
+        temp_name = None
+    finally:
+        if temp_name is not None:
+            Path(temp_name).unlink()
+    return profile["name"]
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("provider", choices=["status", "wispr", "macos"])
+    parser.add_argument(
+        "--config", type=Path, default=Path.home() / ".config/karabiner/karabiner.json"
+    )
+    args = parser.parse_args()
+    try:
+        if args.provider == "status":
+            profile = selected_profile(json.loads(args.config.read_bytes()))
+            print(current_provider(profile))
+        else:
+            profile = select_provider(args.config, args.provider)
+            # Gesture state is temporary; clear it when changing providers so
+            # a tap before selection cannot trigger the newly selected app.
+            if str(args.config) == str(
+                Path.home() / ".config/karabiner/karabiner.json"
+            ):
+                subprocess.run(
+                    [CLI, "--set-variables", json.dumps({TAP_VARIABLE: 0})], check=True
+                )
+            print(f"Dictation provider: {args.provider} ({profile})")
+    except (OSError, ValueError, KeyError, subprocess.CalledProcessError) as exc:
+        parser.exit(1, f"Cannot select dictation provider: {exc}\n")
+
+
+if __name__ == "__main__":
+    main()

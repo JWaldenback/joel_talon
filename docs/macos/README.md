@@ -1,5 +1,9 @@
 # Mac setup: Talon, Apple Dictation and foot pedal
 
+For the selectable Apple/Wispr route, pedal toggle, and double left Option
+shortcut, use [Select a Mac dictation provider](dictation-providers.md).
+The direct-to-Apple rule below is the original setup and rollback option.
+
 Recorded on 2026-09-26 using macOS 27.0, Talon 1.0 build 116 and
 Karabiner-Elements 16.3.0. The user confirmed the direct Dictation pedal mapping
 works on this Mac. Recheck it after installation on another computer.
@@ -136,10 +140,10 @@ pedal, sending the native Dictation key directly:
 
 The rule covers both observed RS Series keyboard interfaces:
 
-| Manufacturer | Vendor ID | Product ID | Interface |
-| --- | --- | --- | --- |
-| OLYMPUS CORPORATION | `1972` / `0x07B4` | `660` / `0x0294` | Keyboard |
-| OM digital solutions | `13218` / `0x33A2` | `660` / `0x0294` | Keyboard |
+| Manufacturer         | Vendor ID          | Product ID       | Interface |
+| -------------------- | ------------------ | ---------------- | --------- |
+| OLYMPUS CORPORATION  | `1972` / `0x07B4`  | `660` / `0x0294` | Keyboard  |
+| OM digital solutions | `13218` / `0x33A2` | `660` / `0x0294` | Keyboard  |
 
 The filter matches either vendor and product pair, not a unique serial number.
 Another pedal with either pair would also match. For different hardware, inspect

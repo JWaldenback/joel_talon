@@ -1,6 +1,7 @@
-"""Pause Talon's input while Apple's built-in Dictation records on macOS."""
+"""Pause Talon's input while Apple Dictation or Wispr Flow records on macOS."""
 
 import time
+from contextlib import suppress
 from threading import RLock
 
 from talon import Module, actions, app, cron, settings
@@ -12,15 +13,24 @@ from .mic_and_eye_tracker_state_log import log
 
 mod = Module()
 mod.setting(
-    "mac_dictation_shortcut", type=str, default="",
+    "mac_dictation_shortcut",
+    type=str,
+    default="",
     desc="Talon key sequence for Apple Dictation. Empty reads the configured macOS shortcut.",
 )
 # DictationIM can remain idle while corespeechd records on its behalf.
 # Observe input activity for both services, not mere process presence.
 mod.setting(
-    "mac_dictation_bundle_ids", type=str,
+    "mac_dictation_bundle_ids",
+    type=str,
     default="com.apple.inputmethod.ironwood,com.apple.CoreSpeech",
     desc="Comma-separated Core Audio bundle IDs for Apple speech recording used by Dictation.",
+)
+mod.setting(
+    "wispr_dictation_bundle_ids",
+    type=str,
+    default="com.electron.wispr-flow,com.electron.wispr-flow.helper,com.electron.wispr-flow.accessibility-mac-app",
+    desc="Core Audio bundle IDs used by Wispr Flow and its recording helpers.",
 )
 
 _pause = InputPause(
@@ -41,9 +51,21 @@ def _recording():
     global _audio
     if _audio is None:
         _audio = MacAudio()
-    bundles = {s.strip() for s in settings.get("user.mac_dictation_bundle_ids").split(",") if s.strip()}
+    bundles = {
+        s.strip()
+        for s in settings.get("user.mac_dictation_bundle_ids").split(",")
+        if s.strip()
+    }
     if not bundles:
         raise ValueError("user.mac_dictation_bundle_ids must identify Apple Dictation")
+    # Watch the recording processes, not whether Flow's background app is
+    # open. Karabiner controls the provider even while Talon is not running;
+    # this watcher only pauses Talon's own input when Talon is running.
+    bundles.update(
+        s.strip()
+        for s in settings.get("user.wispr_dictation_bundle_ids").split(",")
+        if s.strip()
+    )
     return _audio.is_recording(bundles)
 
 
@@ -53,7 +75,10 @@ def _report_error(exc):
     if message != _last_error:
         _last_error = message
         print(f"[mac_dictation] {message}")
-        app.notify("Apple Dictation monitoring unavailable", "Control-Option-Escape restores Talon input if needed.")
+        app.notify(
+            "Dictation monitoring unavailable",
+            "Control-Option-Escape restores Talon input if needed.",
+        )
 
 
 def _tick():
@@ -80,7 +105,10 @@ def _tick():
             if outcome:
                 log(outcome, source="mac_dictation")
             if outcome == "start_failed":
-                app.notify("Apple Dictation did not start", "Talon input restored. Check the Dictation shortcut and text field.")
+                app.notify(
+                    "Apple Dictation did not start",
+                    "Talon input restored. Check the Dictation shortcut and text field.",
+                )
         except Exception as exc:
             # Unknown is not 'stopped': do not unmute during a transient read
             # failure. The recovery hotkey also works while speech is muted.
@@ -182,11 +210,9 @@ class Actions:
         with _lock:
             dictation_active = _session.active
             if not dictation_active:
-                try:
+                # Keep the physical pedal useful if audio monitoring fails.
+                with suppress(Exception):
                     dictation_active = _recording()
-                except Exception:
-                    # Keep the physical pedal useful if audio monitoring fails.
-                    pass
             if dictation_active:
                 # Escape stops Apple Dictation without risking a new start
                 # through its Control-twice toggle shortcut.
@@ -194,7 +220,10 @@ class Actions:
                 _session.finish()
                 _pause.release("mac_manual")
                 _suppress_until_inactive = True
-                if not _pause.owners and actions.sound.active_microphone() in (None, "None"):
+                if not _pause.owners and actions.sound.active_microphone() in (
+                    None,
+                    "None",
+                ):
                     actions.sound.set_microphone("System Default")
                 log("dictation_pedal_recovery", source="mac_dictation")
                 return
@@ -203,7 +232,10 @@ class Actions:
                 _pause.release("mac_manual")
             # Talon can restart with its microphone already set to None.
             # A pedal press must still be able to turn voice input back on.
-            if not _pause.owners and actions.sound.active_microphone() in (None, "None"):
+            if not _pause.owners and actions.sound.active_microphone() in (
+                None,
+                "None",
+            ):
                 actions.sound.set_microphone("System Default")
             elif not was_held:
                 _pause.acquire("mac_manual")

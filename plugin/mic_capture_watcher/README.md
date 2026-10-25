@@ -26,9 +26,12 @@ bundle IDs can be overridden with `user.mac_dictation_bundle_ids` if Apple
 changes them. CoreSpeech is shared by Apple speech features, so other Apple
 speech input using that service also pauses Talon until recording stops.
 
-This Mac integration targets Apple Dictation only, not Superwhisper. It uses
-per-process input state rather than treating any app using the microphone as
-dictation.
+The Mac watcher recognises Apple Dictation and Wispr Flow, including Wispr's
+recording helpers. It uses per-process input state rather than treating any
+app using the microphone as dictation. Wispr's bundle IDs are configurable
+through `user.wispr_dictation_bundle_ids`. The [provider selector](../../docs/macos/dictation-providers.md)
+routes the pedal and double left Option through Karabiner independently of
+Talon. Native-dictation voice entry points continue to target Apple Dictation.
 
 On Windows, it needs the `comtypes` package, which is not bundled with Talon.
 
@@ -103,5 +106,5 @@ The audio-session approach was chosen over window-presence or process-
 presence checks because: (1) Win11's dictation pill is not enumerable as
 a top-level window, (2) on modern Win11 builds voice typing runs in-process
 inside `TextInputHost.exe`, and (3) GUI apps like Super Whisper keep their
-process running continuously — only the *capture session* reliably tracks
+process running continuously — only the _capture session_ reliably tracks
 whether the mic is actually being recorded.
