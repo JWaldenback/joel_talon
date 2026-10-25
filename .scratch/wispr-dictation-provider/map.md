@@ -1,8 +1,8 @@
 # Mac dictation provider trial
 
-Status: ready-for-human
+Status: done
 Claimed by: none
-Blocked by: physical confirmation of the reset-default Fn+Space route
+Blocked by: none
 
 ## Outcome and scope
 
@@ -108,7 +108,10 @@ during recording, no new service, no hardware programming changes.
   The checked base and origin/main were `f813baef`; publish as one commit on
   main, merging any remote advance without rebasing. Remote publication is
   verified separately after the push.
-- Pending: owner physical confirmation of the updated Fn+Space route. Earlier
-  physical acceptance covered Control+Space, not this reset-default route.
+- Owner confirmed **"Both work again"** after the Fn+Space fix, verifying
+  pedal and double left Alt start/stop Wispr against its reset defaults.
+  Earlier physical acceptance covered the Talon-closed/native-fallback setup.
 - Temporary follow-up source, venv, pre-commit environments and lint artifact
   are owned by Codex and removed at the end of this publishing turn.
+
+- Implementation commit: `6527c3a9`. Origin/main was fetched and already integrated.
