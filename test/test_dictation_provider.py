@@ -102,7 +102,11 @@ if hasattr(talon, "test_mode"):
                     str(script),
                     provider,
                 ],
-                env={**os.environ, "APPDATA": str(tmp_path)},
+                env={
+                    **os.environ,
+                    "APPDATA": str(tmp_path / "redirected-appdata"),
+                    "USERPROFILE": str(tmp_path / "profile"),
+                },
                 capture_output=True,
                 text=True,
                 creationflags=subprocess.CREATE_NO_WINDOW,
@@ -113,14 +117,76 @@ if hasattr(talon, "test_mode"):
             result = select(provider)
             assert result.returncode == 0, result.stderr
             assert select("status").stdout.strip() == provider
-            assert (tmp_path / "TalonDictation/provider.txt").read_bytes() == (
-                provider + "\n"
-            ).encode("ascii")
+            assert (
+                tmp_path / "profile/.talon-dictation/provider.txt"
+            ).read_bytes() == (provider + "\n").encode("ascii")
 
-        config = tmp_path / "TalonDictation/provider.txt"
+        config = tmp_path / "profile/.talon-dictation/provider.txt"
         result = select("unknown")
         assert result.returncode != 0
         assert config.read_text().strip() == "wispr"
         config.write_text("invalid")
         assert select("status").returncode != 0
         assert config.read_text() == "invalid"
+
+    @pytest.mark.skipif(sys.platform != "win32", reason="Native AutoHotkey reader")
+    def test_windows_shortcuts_read_shared_profile_state(tmp_path):
+        ahk = Path(os.environ["PROGRAMFILES"]) / "AutoHotkey/AutoHotkey.exe"
+        if not ahk.is_file():
+            pytest.skip("AutoHotkey 1.1 is required for the native reader check")
+
+        # Exercise the same reader the login hook calls, without installing a
+        # keyboard hook or sending keys. AppData deliberately differs from the
+        # profile, as it does between packaged apps and Windows login startup.
+        profile = tmp_path / "User profile with spaces"
+        config = profile / ".talon-dictation/provider.txt"
+        config.parent.mkdir(parents=True)
+        appdata = tmp_path / "Private AppData"
+        old_config = appdata / "TalonDictation/provider.txt"
+        old_config.parent.mkdir(parents=True)
+        old_config.write_text("windows\n")
+        library = (
+            Path(__file__).parents[1] / "plugin/dictation_router/dictation_provider.ahk"
+        )
+        script = tmp_path / "read_provider.ahk"
+        script.write_text(
+            f"""#NoEnv
+#NoTrayIcon
+#Include {library}
+try {{
+    provider := ReadDictationProvider()
+    FileAppend, %provider%, *
+    ExitApp, 0
+}} catch error {{
+    FileAppend, % error.Message, **
+    ExitApp, 1
+}}
+"""
+        )
+        for saved, expected in (
+            ("wispr\n", "wispr"),
+            ("windows\n", "windows"),
+            ("invalid", None),
+            (None, "windows"),
+        ):
+            if saved is None:
+                config.unlink()
+            else:
+                config.write_text(saved)
+            result = subprocess.run(
+                [str(ahk), "/ErrorStdOut", str(script)],
+                env={
+                    **os.environ,
+                    "USERPROFILE": str(profile),
+                    "APPDATA": str(appdata),
+                },
+                capture_output=True,
+                text=True,
+                creationflags=subprocess.CREATE_NO_WINDOW,
+                timeout=10,
+            )
+            assert result.returncode == (0 if expected is not None else 1), (
+                saved,
+                result.stderr,
+            )
+            assert result.stdout == (expected or "")

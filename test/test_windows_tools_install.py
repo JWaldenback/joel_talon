@@ -27,23 +27,24 @@ if hasattr(talon, "test_mode"):
             "docs/windows/dictation-provider.ps1",
             "plugin/dictation_router/double_tap_control.ahk",
             "plugin/dictation_router/dictation_taps.ahk",
+            "plugin/dictation_router/dictation_provider.ahk",
         ):
             destination = clone / relative
             destination.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(repo / relative, destination)
 
-        desktop, startup, appdata = (
-            tmp_path / name for name in ("Desktop", "Startup", "AppData")
+        desktop, startup, profile = (
+            tmp_path / name for name in ("Desktop", "Startup", "Profile")
         )
-        for directory in (desktop, startup, appdata / "TalonDictation"):
+        for directory in (desktop, startup, profile / ".talon-dictation"):
             directory.mkdir(parents=True)
         (desktop / "keep.txt").write_text("Keep desktop content")
         (startup / "keep.txt").write_text("Keep startup content")
-        choice = appdata / "TalonDictation/provider.txt"
+        choice = profile / ".talon-dictation/provider.txt"
         choice.write_bytes(b"wispr\n")
         env = {
             **os.environ,
-            "APPDATA": str(appdata),
+            "USERPROFILE": str(profile),
             "TOOLS_DESKTOP": str(desktop),
             "TOOLS_STARTUP": str(startup),
         }

@@ -159,3 +159,56 @@ Provider switching during recording is unsupported.
   accepted base 1435cadd. Publish this reviewed Windows effort as one commit on
   main, excluding the pre-existing untracked control-dictation-shortcut record.
   Verify origin/main matches the resulting local commit after the authorized push.
+
+## Reboot follow-up, 2026-10-28
+
+- After restart, double left Alt opened Windows dictation. The saved provider
+  was still wispr; Flow and the correct AutoHotkey script had both started at
+  login, with enabled existing Startup shortcuts.
+- A shortcut-only trace confirmed Alt emitted Win+H. The running script's line
+  history took the missing-provider-file fallback, although its configured path
+  was correct and fresh AutoHotkey processes could read that file. The reason
+  for the old process's failed file check is unconfirmed.
+- Relaunched the existing Startup shortcut through Explorer. Owner confirmed
+  "Wispr works now". Kept both startup entries and the saved selection; no
+  runtime source change or automated recording keys. Next-reboot routing still
+  needs physical confirmation. Temporary observers and metadata probes removed.
+
+## Shortcut process missing, 2026-10-30
+
+- Wispr Flow and its helper were running, and the saved provider remained
+  wispr. No AutoHotkey process was running. Both existing startup shortcuts
+  still targeted valid files. Windows had not rebooted since October 28.
+- Restarted the existing AutoHotkey Startup shortcut through Explorer and
+  verified the correct repo script was running. Sent no recording keys.
+  Physical pedal/Alt acceptance remains pending for this restart.
+- No AutoHotkey crash appeared in Windows Application error/report events
+  over the preceding two days. Why the process exited remains unknown.
+  If it recurs, investigate process exit rather than adding duplicate startup
+  entries. No runtime source changes or publication in this follow-up.
+
+## Persistent selection repair, 2026-11-01
+
+- Both AutoHotkey and Flow started at login, but Alt routed to Windows.
+  Inspected the original login process before reloading. Its FileExist call
+  reached GetFileAttributesW with the correct path and returned error 3,
+  path not found. Diagnostic breakpoints were restored and debuggers detached.
+- Root cause: the settings file written from Codex's process context was
+  redirected to OpenAI.Codex's LocalCache/Roaming/TalonDictation, confirmed
+  with GetFinalPathNameByHandle. The native login process could not see that
+  directory. Restarting from Codex had concealed this context difference.
+- Selector and AutoHotkey now use USERPROFILE/.talon-dictation/provider.txt.
+  Saved wispr there and confirmed the original login process sees the same
+  file as the tools. Retained the existing startup entries. The original
+  native process reloaded the repaired script itself, rather than launching
+  from Codex again. Double Control and all recording chords are unchanged.
+- Added a hook-free native reader check, moved the existing selector regression
+  to separate profile/AppData roots, and updated installer validation/docs.
+  The storage regression failed against the old selector, then passed after
+  the repair. All 100 tests, changed-file ruff and full AHK syntax check pass.
+  No new Talon load error observed. No automated recording keystrokes sent.
+- Owner confirmed "Yes, now it's Wispr" after the pedal/Alt acceptance prompt.
+  Next-reboot physical confirmation remains pending. Temporary diagnostic files
+  and isolated test environments removed; all debuggers/probes exited.
+  Owner authorized committing and pushing this repair on 2026-11-01. Publish
+  the startup fix and verify origin/main matches the resulting local commit.

@@ -10,10 +10,10 @@
 ; Use an unassigned key to suppress Start/menu activation without recording.
 #MenuMaskKey vkE8
 #Include %A_ScriptDir%\dictation_taps.ahk
+#Include %A_ScriptDir%\dictation_provider.ahk
 SendMode Input
 SetBatchLines -1
 
-PROVIDER_FILE := A_AppData . "\TalonDictation\provider.txt"
 taps := new DictationTaps()
 
 ; Only observe key-down events here. The up hotkeys below handle dispatch.
@@ -83,16 +83,10 @@ return
 #If
 
 ToggleSelectedProvider() {
-    global PROVIDER_FILE
-    if (!FileExist(PROVIDER_FILE)) {
-        provider := "windows"
-    } else {
-        FileRead, provider, %PROVIDER_FILE%
-        if (ErrorLevel) {
-            TrayTip, Dictation unavailable, Cannot read the saved provider., 5, 2
-            return
-        }
-        provider := Trim(provider, " `t`r`n")
+    try provider := ReadDictationProvider()
+    catch error {
+        TrayTip, Dictation unavailable, % error.Message, 5, 2
+        return
     }
     if (provider = "windows") {
         SendInput, #h
@@ -108,7 +102,5 @@ ToggleSelectedProvider() {
         ; Flow itself owns the recording state for the start/finish toggle.
         SetKeyDelay, 30, 30
         SendEvent, {LControl down}{LWin down}{Space down}{Space up}{LWin up}{LControl up}
-    } else {
-        TrayTip, Dictation unavailable, Select wispr or windows with the provider selector., 5, 2
     }
 }

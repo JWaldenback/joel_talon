@@ -40,6 +40,7 @@ if ($version.FileMajorPart -ne 1 -or $version.FileMinorPart -ne 1) {
 $requiredFiles = @(
     $dictationScript,
     (Join-Path $repoRoot 'plugin\dictation_router\dictation_taps.ahk'),
+    (Join-Path $repoRoot 'plugin\dictation_router\dictation_provider.ahk'),
     (Join-Path $repoRoot 'docs\windows\dictation-provider.ps1'),
     (Join-Path $PSScriptRoot 'README.md')
 )

@@ -48,10 +48,14 @@ With Talon running, the same choices are available as voice commands:
 - **dictation provider Windows**
 - **dictation provider status**
 
-Selection is saved in `%APPDATA%\TalonDictation\provider.txt`. The script reads
+Selection is saved in `%USERPROFILE%\.talon-dictation\provider.txt`. The script reads
 it for each toggle, so selection survives restarting Talon, AutoHotkey or
 Windows and needs no script reload. An absent file means Windows; an invalid
-file produces a notification and sends no dictation shortcut.
+or unreadable file produces a notification and sends no dictation shortcut.
+The file lives outside AppData because packaged apps can redirect AppData into
+private storage that the Windows login process cannot see. When updating from
+the earlier AppData location, run **Talon - Use Wispr** once to save your choice
+in the shared location.
 
 ## Windows startup
 
@@ -62,9 +66,10 @@ The existing `double-tap-control-dictation.lnk` in `shell:startup` runs:
 ```
 
 The shortcut points directly at the repo, including the adjacent
-`dictation_taps.ahk` library. After changing these scripts, launch the startup
-shortcut again to replace the old instance. Keep only one startup entry for
-this script. Do not also run the older `double_tap_altgr.ahk` if right Alt is
+`dictation_taps.ahk` and `dictation_provider.ahk` libraries. After changing these
+scripts, launch the startup shortcut again to replace the old instance. Keep
+only one startup entry for this script. Do not also run the older
+`double_tap_altgr.ahk` if right Alt is
 reserved for screenshot shortcuts. To disable this setup, exit its AutoHotkey
 tray icon and remove the startup shortcut.
 

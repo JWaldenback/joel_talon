@@ -6,7 +6,12 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
-$providerDirectory = Join-Path $env:APPDATA 'TalonDictation'
+# Packaged apps can redirect AppData into their private LocalCache. The login
+# shortcut and Desktop controls must share the same file with those apps.
+if (-not $env:USERPROFILE) {
+    throw 'Cannot locate the Windows user profile.'
+}
+$providerDirectory = Join-Path $env:USERPROFILE '.talon-dictation'
 $providerFile = Join-Path $providerDirectory 'provider.txt'
 
 if ($Provider -eq 'status') {

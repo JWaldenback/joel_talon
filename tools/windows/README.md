@@ -47,6 +47,11 @@ Windows dictation. Switch providers between recordings. Selection survives
 restarting the apps or PC. The three `.cmd` files also run directly from the
 repo without installing Desktop links.
 
+The saved choice is `%USERPROFILE%\.talon-dictation\provider.txt`, outside
+AppData so packaged apps and Windows login startup see the same file. After
+updating from the earlier AppData-based setup, run **Talon - Use Wispr** once
+to save the choice in this location. Setup itself preserves the saved choice.
+
 The installer uses Windows' actual Desktop and Startup folders, including
 redirected Desktops. If AutoHotkey is installed elsewhere, run this from
 `tools\windows` with its actual executable path:
@@ -61,6 +66,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\install.ps1 -AutoHotke
 | --- | --- |
 | [double_tap_control.ahk](../../plugin/dictation_router/double_tap_control.ahk) | Active. The main dictation shortcut process installed above |
 | [dictation_taps.ahk](../../plugin/dictation_router/dictation_taps.ahk) | Library used by the main script. Do not run separately |
+| [dictation_provider.ahk](../../plugin/dictation_router/dictation_provider.ahk) | Reads the shared saved provider choice. Do not run separately |
 | [double_tap_altgr.ahk](../../plugin/dictation_router/double_tap_altgr.ahk) | Older optional helper. Double right Alt starts Windows dictation. Setup does not enable it because it conflicts with reserving AltGr for other shortcuts |
 | [dictation-provider.ps1](../../docs/windows/dictation-provider.ps1) | Standalone provider selector used by the Desktop and voice controls |
 | [install_deps.bat](../../plugin/mic_capture_watcher/install_deps.bat) | One-time installation of Talon's Windows audio-monitoring dependency. Follow the watcher's setup instructions |
